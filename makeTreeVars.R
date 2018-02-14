@@ -1,6 +1,6 @@
+# load libraries
 library(phytools)
 library(ape)
-#source('/Users/zenalapp/Documents/research/Project_Penn_KPC/Analysis/Colistin_resistance/lib/plot_matrix.R')
 
 # makeTreeVars - plots tree and heatmap of variants side by side. The first column is mic.
 # Input:
