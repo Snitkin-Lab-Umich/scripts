@@ -11,7 +11,6 @@ library(magrittr) # For piping commands
 # READ IN VARIANT MATRIX
 ########################
 
-snpmat_path = "../../Regional_KPC_transmission/2018-07-16_penn_ST258_variants/data/var_mats/SNP_matrix_allele_new.csv"
 
 ########################
 # LIBRARY 
