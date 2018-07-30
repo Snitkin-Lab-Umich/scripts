@@ -1,0 +1,298 @@
+# Forked from: /nfs/esnitkin/Project_MRSA/Analysis/2016-MRSA_colonization_vs_infection/2018-07-17_rewrite_parser_for_SNP_mat_with_newest_matrix_format_v2/lib
+##################
+# REQUIRE LIBRARIES
+###################
+require(seqinr) # Necessary for converting 3 letter amino acid code to 1 letter amino acid code
+library(Biostrings) # SNT: Necessary for loading in BLOSUM matrix 
+data(BLOSUM80) # Necessary for BLOSUM prediction
+library(magrittr) # For piping commands 
+
+########################
+# READ IN VARIANT MATRIX
+########################
+
+snpmat_path = "../../Regional_KPC_transmission/2018-07-16_penn_ST258_variants/data/var_mats/SNP_matrix_allele_new.csv"
+
+########################
+# LIBRARY 
+########################
+
+split_any_annotations <- function(variant_matrix, num_of_row_with_multiple_annotations){
+  # This function takes in a variant matrix and a row number. 
+  # This function outputs a variant matrix. 
+  # This function takes in a matrix with a row.name with multiple annotations and: 
+  #   1. Grabs all of the annotations within that row.name and formats them into separate annotations
+  #   2. Appends rows to the matrix which are duplicates of the row in question.
+  #   3. Updates the row.names of the appended rows and the original row in question. 
+  
+  # Check inputs
+  if (class(variant_matrix) != "matrix"){
+    stop("Input a variant matrix")
+  }
+  if (class(num_of_row_with_multiple_annotations) != "integer" | num_of_row_with_multiple_annotations < 1 | num_of_row_with_multiple_annotations > nrow(variant_matrix)){
+    stop("Input a valid row number")
+  } 
+  
+  
+  # Split the current row.name which has multiple annotations
+  split_annotations <- strsplit(row.names(variant_matrix)[num_of_row_with_multiple_annotations], ";")
+  # Count how many annotations are in this row.name
+  num_annotations <- (length(split_annotations[[1]])-1) 
+  # Initialize a list, each entry will correspond to a single annotation
+  names_for_split_annotations <- list(NA, num_annotations)
+  for (k in 1:(num_annotations)){
+    start  <- split_annotations[[1]][1] # Grab the name of the variant ("Coding SNP at 60 > G;C)
+    end <- split_annotations[[1]][k+1]
+    full   <- paste(start, end, sep = ";") # concatenate the start, middle, and end
+    names_for_split_annotations[[k]] <- full
+  }
+  
+  # Initialize the output matrix
+  variant_matrix_with_annotation_split <- matrix(NA, nrow = (nrow(variant_matrix) + num_annotations - 1), ncol = ncol(variant_matrix))
+  # Populate the part of the matrix that will stay the same as the input matrix
+  variant_matrix_with_annotation_split[1:nrow(variant_matrix), ] <- variant_matrix
+  # Populate the new rows of the matrix (1 new row for each extra annotation)
+  variant_matrix_with_annotation_split[(nrow(variant_matrix) + 1):nrow(variant_matrix_with_annotation_split), ] <- matrix(rep(variant_matrix[num_of_row_with_multiple_annotations, ], (num_annotations - 1)), (num_annotations - 1), ncol(variant_matrix), byrow = TRUE)
+  # Attach the original matrix row.names for the unchanged part of the matrix and add the annotations you just split
+  row.names(variant_matrix_with_annotation_split) <- c(row.names(variant_matrix), unlist(names_for_split_annotations)[2:length(names_for_split_annotations)])
+  # Shorten the annotation for the row in question
+  row.names(variant_matrix_with_annotation_split)[num_of_row_with_multiple_annotations] <- names_for_split_annotations[[1]]
+  return(variant_matrix_with_annotation_split)
+} # end split_any_annotations()
+
+# function to parse snp matrix
+# input:
+# 1) snpmat - path to snp matrix or RData file of snp matrix
+parse_snps = function(snpmat){
+  
+  # if a path to the snp matrix is given
+  if(is.character(snpmat)){
+    #using the allele matrix, because eventually we will need to deal with duplicate alleles 
+    snpmat <-   read.table(snpmat,
+                           header = TRUE,
+                           stringsAsFactors = FALSE,
+                           sep = "\t",
+                           quote = "", 
+                           row.names = 1)
+    # save snpmat as RData file
+    save.image(paste0(format(Sys.time(), "%Y-%m-%d"),'_snpmat.RData'))
+  }
+  snpmat = snpmat[!is.na(row.names(snpmat)),] #remove blank lines
+  
+  #### SPLIT UP THE MATRIX #### 
+  
+  # GET ROWS WITH MULTIPLE ALLELES:
+  #gets the variant nucleotide, for duplicate alleles there will be a comma separating the dup alleles 
+  alleles = strsplit(row.names(snpmat), ';') %>% sapply(., function(x){x[1]}) %>% gsub('functional.*$', '', .) %>% gsub('^.*>', '', .) %>% gsub(' ', '', .)
+  
+  rows_with_duplicate_alleles = as.integer(grep(',', alleles))
+  
+  # temporary change - need to fix when we figure out what's going on with these 
+  snpmat_less <- snpmat[-rows_with_duplicate_alleles,]
+  
+  # KS ADDED 2 LINES: drop rows with "None". Temporary fix. What's with these?
+  rows_with_none <- as.integer(grep("None", row.names(snpmat_less)))
+  # ZL ADDED conditional
+  if(length(rows_with_none) > 0){
+    snpmat_less <- snpmat_less[-rows_with_none, ]
+  }
+  
+  num_dividers <- sapply(1:nrow(snpmat_less), function(x) lengths(regmatches(row.names(snpmat_less)[x], gregexpr(";", row.names(snpmat_less)[x]))))
+  rows_with_multiple_annotations <- c(1:nrow(snpmat_less))[num_dividers > 2]
+  
+  annotations_fixed_less <- as.matrix(snpmat_less)
+  for (j in 1:length(rows_with_multiple_annotations)){
+    annotations_fixed_less <- split_any_annotations(annotations_fixed_less, rows_with_multiple_annotations[j])
+  }
+  
+  # GET FUNCTIONAL ANNOTATION - PHAGE, REPEATS, MASKED 
+  flag = strsplit(row.names(annotations_fixed_less), ';') %>% sapply(., function(x){x[1]}) %>% gsub('^.*functional=', '', .)
+  
+  phage = sapply(strsplit(flag, '_'), function(x){x[1]}) =='PHAGE'
+  repeats = sapply(strsplit(flag, '_'), function(x){x[2]}) =='REPEATS'
+  # note: MASK might not be the right word but I don't have any in my data set so need to ask Ali 
+  masked = sapply(strsplit(flag, '_'), function(x){x[3]}) == 'MASK'
+  
+  # SPLIT UP COMPONENTS 
+  annotation_components <- strsplit(row.names(annotations_fixed_less), "\\|")
+  
+  # GRAB PREDICTION OF FUNCTIONAL IMPACT OF EACH SNP 
+  snpeff_prediction <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][3])
+  snpeff_low <- snpeff_moderate <- snpeff_high <- snpeff_modifier <- snpeff_prediction
+  
+  snpeff_low[snpeff_low != "LOW"] = FALSE 
+  snpeff_low[snpeff_low == "LOW"] = TRUE
+  snpeff_low = as.logical(snpeff_low)
+  
+  snpeff_moderate[snpeff_moderate != "MODERATE"] <- FALSE
+  snpeff_moderate[snpeff_moderate == "MODERATE"] <- TRUE
+  snpeff_moderate = as.logical(snpeff_moderate)
+  
+  snpeff_high[snpeff_high != "HIGH"] <- FALSE
+  snpeff_high[snpeff_high == "HIGH"] <- TRUE
+  snpeff_high = as.logical(snpeff_high)
+  
+  snpeff_modifier[snpeff_modifier != "MODIFIER"] <- FALSE
+  snpeff_modifier[snpeff_modifier == "MODIFIER"] <- TRUE
+  snpeff_modifier = as.logical(snpeff_modifier)
+  
+  
+  # GET SNP's GENOMIC POSITION
+  pos <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][1])
+  pos <- as.numeric(gsub(".* at (\\d+) >.*", "\\1", pos))
+  
+  # GET GENE ID 
+  # sometimes it's the gene symbol and sometimes its USA300HOU_#### - i need them all in the latter format 
+  genes <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][4]) # gene ID
+  
+  
+  
+  # GET NUCLEOTIDE CHANGE 
+  nuc <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][5])
+  nuc <- gsub( "[cn].\\d+", "" , nuc) #eg A>C
+  nuc <- gsub(">", "->", nuc) # A->C
+  
+  
+  
+  # GRAB SnpEff's DESCRIPTION OF THE VARIANT
+  #[1] "synonymous_variant"                                "missense_variant"                                 
+  #[3] "intergenic_region"                                 "splice_region_variant&stop_retained_variant"      
+  #[5] "intragenic_variant"                                "non_coding_transcript_variant"                    
+  #[7] "stop_lost&splice_region_variant"                   "stop_gained"                                      
+  #[9] "start_lost"                                        "initiator_codon_variant"                          
+  #[11] "initiator_codon_variant&non_canonical_start_codon"
+  
+  
+  var_type <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][2])
+  
+  s_mut = var_type %in% c('synonymous_variant', 'splice_region_variant&stop_retained_variant')
+  
+  ns_mut = var_type == 'missense_variant'
+  
+  intergenic = var_type == 'intergenic_region'
+  
+  intragenic = var_type == 'intragenic_variant'
+  
+  stop_lost = var_type == 'stop_lost&splice_region_variant'
+  
+  stop = var_type == 'stop_gained'
+  
+  start_lost = var_type == 'start_lost'
+  
+  # KS ADDED LINE: 
+  initiator <- var_type == "initiator_codon_variant"
+  
+  
+  
+  # GET GENE ID OF THE GENES FLANKING AN INTERGENIC SNP
+  ig_gene1 <- ig_gene2 <- genes
+  ig_gene1[intergenic] <- gsub("[-].*", "", genes[intergenic])
+  ig_gene2[intergenic] <- gsub(".*[-]", "", genes[intergenic])
+  
+  
+  # GET REF_AA AND VAR_AA FOR S_MUT AND NS_MUT AND STOPS 
+  
+  aa <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][6])
+  
+  ref_aa <- aa %>% gsub("p[.]", "",.) %>% gsub("[0-9]+.*", "", .)  
+  var_aa <- aa %>% gsub("p[.]", "",.) %>% gsub(".*[0-9]+", "", .) 
+  
+  ref_aa[ns_mut] <- a(ref_aa[ns_mut])
+  var_aa[ns_mut] <- a(var_aa[ns_mut])
+  
+  ref_aa[s_mut] <- gsub('Ter', 'Stp', ref_aa[s_mut]) %>% a(.)
+  var_aa[s_mut] <- gsub('Ter', 'Stp', var_aa[s_mut]) %>% a(.)
+  
+  ref_aa[stop] <- gsub('Ter', 'Stp', ref_aa[stop]) %>% a(.)
+  #var_aa[stop] is already in single amino acid code format 
+  
+  
+  
+  # INITIALIZE SIFT_DEL AND PROVEAN_DEL FOR USE OUTSIDE OF SCRIPT
+  sift_del <- provean_del <- rep(FALSE, length(ns_mut))
+  
+  aa_loc <- gsub("[A-z*?.]", "", aa)
+  aa_var <- paste(ref_aa, aa_loc, var_aa, sep = "")
+  aa <- paste(ref_aa, "->", var_aa, sep = "")
+  
+  # DEFINE BLOSUM DELETERIOUS MUTATIONS
+  del_mut = rep(FALSE, length(ns_mut))
+  for (i in 1:length(ref_aa[ns_mut])){
+    del_mut[ns_mut][i] <- BLOSUM80[ref_aa[ns_mut][i], var_aa[ns_mut][i]] < 0
+  }  
+  
+  
+  # CALCULATE GENE LENGTH IN NUCLEOTIDES 
+  gene_length <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][7])
+  gene_length <- gsub("[0-9]+/", "", gene_length)
+  gene_length <- as.numeric(gene_length)
+  
+  # GENE SYMBOL 
+  gene_symbol <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][9])
+  ig_gene1_symbol <- ig_gene2_symbol <- rep(NA, length(gene_symbol))
+  ig_gene1_symbol[intergenic] = strsplit(gene_symbol[intergenic], ',') %>% sapply(., function(x){x[1]})
+  ig_gene2_symbol[intergenic] = strsplit(gene_symbol[intergenic], ',') %>% sapply(., function(x){x[2]})
+  
+  # SAVE ANNOTATIONS AS A SEPARATE OBJECT
+  annots <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][10])
+  
+  
+  # SAVE MATRIX
+  # ZL: changed to annotations_fixed_less?
+  var_mat_bin <- annotations_fixed_less
+  
+  return(list(snpmat=annotations_fixed_less,
+              phage=phage,
+              masked=masked,
+              snpeff_prediction=snpeff_prediction,
+              snpeff_low=snpeff_low,
+              snpeff_moderate=snpeff_moderate,
+              snpeff_high=snpeff_high,
+              snpeff_modifier=snpeff_modifier,
+              pos=pos,
+              genes=genes,
+              nuc=nuc,
+              var_type=var_type,
+              s_mut=s_mut,
+              ns_mut=ns_mut,
+              intergenic=intergenic,
+              intragenic=intragenic,
+              stop_lost=stop_lost,
+              stop=stop,
+              start_lost=start_lost,
+              initiator=initiator,
+              ig_gene1=ig_gene1,
+              ig_gene2=ig_gene2,
+              aa=aa,
+              ref_aa=ref_aa,
+              var_aa=var_aa,
+              sift_del=sift_del,
+              aa_loc=aa_loc,
+              aa_var=aa_var,
+              del_mut=del_mut,
+              gene_length=gene_length,
+              gene_symbol=gene_symbol,
+              ig_gene1_symbol=ig_gene1_symbol,
+              ig_gene2_symbol=ig_gene2_symbol,
+              annots=annots
+              ))
+  
+}
+
+# READ IN GENE_LOC FILE 
+gene_info = read.table('./KPNIH1_gene_loc.txt', sep = "\t", header = TRUE, row.names = 1)
+gene_loc_raw = cbind(gene_info[,1] - 27084, gene_info[,2]-27084)
+row.names(gene_loc_raw) = as.matrix(gsub("^USA300_TCH1516_genome:", "", row.names(gene_info), perl=TRUE))
+gene_loc = gene_loc_raw[grep("pUSA", row.names(gene_loc_raw) ,invert = TRUE),];
+
+# RE-ASSIGN GENE NAME BASED ON FORMAT IN REF GENOME (in my case USA300HOU_####) AND NOT GENE SYMBOL
+
+
+# SENSE OF GENES
+# will assign genes with sense once I update the gene name above 
+sense = rep(NA, length(gene_loc[,1]))
+sense[gene_loc[,1] < gene_loc[,2]] = '+'
+sense[gene_loc[,1] > gene_loc[,2]] = '-'
+
+  
+
