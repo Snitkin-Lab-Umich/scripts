@@ -11,7 +11,6 @@ library(magrittr) # For piping commands
 # READ IN VARIANT MATRIX
 ########################
 
-
 ########################
 # LIBRARY 
 ########################
@@ -59,9 +58,13 @@ split_any_annotations <- function(variant_matrix, num_of_row_with_multiple_annot
   return(variant_matrix_with_annotation_split)
 } # end split_any_annotations()
 
+#### SNP Parser Function ####
+
 # function to parse snp matrix
 # input:
-# 1) snpmat - path to snp matrix or RData file of snp matrix
+# 1) snpmat - path to snp matrix or snp matrix in matrix form
+# output:
+# list containing cleaned snpmat and parsed variables
 parse_snps = function(snpmat){
   
   # if a path to the snp matrix is given
@@ -73,8 +76,9 @@ parse_snps = function(snpmat){
                            sep = "\t",
                            quote = "", 
                            row.names = 1)
+    
     # save snpmat as RData file
-    save.image(paste0(format(Sys.time(), "%Y-%m-%d"),'_snpmat.RData'))
+    #save.image(paste0(format(Sys.time(), "%Y-%m-%d"),'_snpmat.RData'))
   }
   snpmat = snpmat[!is.na(row.names(snpmat)),] #remove blank lines
   
@@ -235,63 +239,332 @@ parse_snps = function(snpmat){
   # SAVE ANNOTATIONS AS A SEPARATE OBJECT
   annots <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][10])
   
+  # label column names of snp matrix
+  colnames(annotations_fixed_less) = colnames(snpmat)
   
   # SAVE MATRIX
   # ZL: changed to annotations_fixed_less?
   var_mat_bin <- annotations_fixed_less
   
-  return(list(snpmat=annotations_fixed_less,
-              phage=phage,
-              masked=masked,
-              snpeff_prediction=snpeff_prediction,
-              snpeff_low=snpeff_low,
-              snpeff_moderate=snpeff_moderate,
-              snpeff_high=snpeff_high,
-              snpeff_modifier=snpeff_modifier,
-              pos=pos,
-              genes=genes,
-              nuc=nuc,
-              var_type=var_type,
-              s_mut=s_mut,
-              ns_mut=ns_mut,
-              intergenic=intergenic,
-              intragenic=intragenic,
-              stop_lost=stop_lost,
-              stop=stop,
-              start_lost=start_lost,
-              initiator=initiator,
-              ig_gene1=ig_gene1,
-              ig_gene2=ig_gene2,
-              aa=aa,
-              ref_aa=ref_aa,
-              var_aa=var_aa,
-              sift_del=sift_del,
-              aa_loc=aa_loc,
-              aa_var=aa_var,
-              del_mut=del_mut,
-              gene_length=gene_length,
-              gene_symbol=gene_symbol,
-              ig_gene1_symbol=ig_gene1_symbol,
-              ig_gene2_symbol=ig_gene2_symbol,
-              annots=annots
-              ))
   
-}
-
-# READ IN GENE_LOC FILE 
-gene_info = read.table('./KPNIH1_gene_loc.txt', sep = "\t", header = TRUE, row.names = 1)
-gene_loc_raw = cbind(gene_info[,1] - 27084, gene_info[,2]-27084)
-row.names(gene_loc_raw) = as.matrix(gsub("^USA300_TCH1516_genome:", "", row.names(gene_info), perl=TRUE))
-gene_loc = gene_loc_raw[grep("pUSA", row.names(gene_loc_raw) ,invert = TRUE),];
-
-# RE-ASSIGN GENE NAME BASED ON FORMAT IN REF GENOME (in my case USA300HOU_####) AND NOT GENE SYMBOL
-
-
-# SENSE OF GENES
-# will assign genes with sense once I update the gene name above 
-sense = rep(NA, length(gene_loc[,1]))
-sense[gene_loc[,1] < gene_loc[,2]] = '+'
-sense[gene_loc[,1] > gene_loc[,2]] = '-'
-
+  parsed = list(mat=annotations_fixed_less,
+                     phage=phage,
+                     repeats=repeats,
+                     masked=masked,
+                     snpeff_prediction=snpeff_prediction,
+                     snpeff_low=snpeff_low,
+                     snpeff_moderate=snpeff_moderate,
+                     snpeff_high=snpeff_high,
+                     snpeff_modifier=snpeff_modifier,
+                     pos=pos,
+                     genes=genes,
+                     nuc=nuc,
+                     var_type=var_type,
+                     s_mut=s_mut,
+                     ns_mut=ns_mut,
+                     intergenic=intergenic,
+                     intragenic=intragenic,
+                     stop_lost=stop_lost,
+                     stop=stop,
+                     start_lost=start_lost,
+                     initiator=initiator,
+                     ig_gene1=ig_gene1,
+                     ig_gene2=ig_gene2,
+                     aa=aa,
+                     ref_aa=ref_aa,
+                     var_aa=var_aa,
+                     sift_del=sift_del,
+                     aa_loc=aa_loc,
+                     aa_var=aa_var,
+                     del_mut=del_mut,
+                     gene_length=gene_length,
+                     gene_symbol=gene_symbol,
+                     ig_gene1_symbol=ig_gene1_symbol,
+                     ig_gene2_symbol=ig_gene2_symbol,
+                     annots=annots)
   
+  save(parsed, file = paste0(format(Sys.time(), "%Y-%m-%d"),'_snpmat_parsed.RData'))
+  
+  return(parsed)
+  
+} #end parse_snps
+
+# ZL - not sure what's going on here, so commented it out until we can put it in a function
+# # READ IN GENE_LOC FILE 
+# gene_info = read.table('./KPNIH1_gene_loc.txt', sep = "\t", header = TRUE, row.names = 1)
+# gene_loc_raw = cbind(gene_info[,1] - 27084, gene_info[,2]-27084)
+# row.names(gene_loc_raw) = as.matrix(gsub("^USA300_TCH1516_genome:", "", row.names(gene_info), perl=TRUE))
+# gene_loc = gene_loc_raw[grep("pUSA", row.names(gene_loc_raw) ,invert = TRUE),];
+# 
+# # RE-ASSIGN GENE NAME BASED ON FORMAT IN REF GENOME (in my case USA300HOU_####) AND NOT GENE SYMBOL
+# 
+# 
+# # SENSE OF GENES
+# # will assign genes with sense once I update the gene name above 
+# sense = rep(NA, length(gene_loc[,1]))
+# sense[gene_loc[,1] < gene_loc[,2]] = '+'
+# sense[gene_loc[,1] > gene_loc[,2]] = '-'
+
+
+#### Indel Parser Function ####
+
+# 2018-07-30
+# KS forked from ST'd indel_parser.R
+# ------------------------------------------------------------------------------
+
+# KATIE - can you add a logical to indicate where the split rows are (i.e. the duplicated annotations) -- STEPH: see new variable: second_split_of_annotation
+
+########################
+# LIBRARY 
+########################
+
+# parse indel matrix function
+# input:
+# 1) indel matrix
+# output:
+# list including cleaned indel matrix and parsed information
+parse_indels = function(indelmat){
+  
+  indelmat <- read.table(indelmat,
+                         header = TRUE, 
+                         stringsAsFactors = FALSE, 
+                         sep = "\t",
+                         quote = "", 
+                         row.names = 1
+  )
+  
+  indelmat = indelmat[!is.na(row.names(indelmat)),] #remove blank lines 
+  
+  # GET ROWS WITH MULTIPLE ALLELES:
+  #gets the variant nucleotide, for duplicate alleles there will be a comma separating the dup alleles 
+  alleles = strsplit(row.names(indelmat), ';') %>% sapply(., function(x){x[1]}) %>% gsub('functional.*$', '', .) %>% gsub('^.*>', '', .) %>% gsub(' ', '', .)
+  
+  rows_with_duplicate_alleles = as.integer(grep(',', alleles))
+  
+  # temporary change - need to fix when we figure out what's going on with these 
+  indelmat_less <- indelmat[-rows_with_duplicate_alleles,]
+  
+  # KS ADDED 2 LINES: drop rows with "None". Temporary fix. What's with these?
+  rows_with_none <- as.integer(grep("None", row.names(indelmat_less)))
+  indelmat_less <- indelmat_less[-rows_with_none, ]
+  
+  num_dividers <- sapply(1:nrow(indelmat_less), function(x) lengths(regmatches(row.names(indelmat_less)[x], gregexpr(";", row.names(indelmat_less)[x]))))
+  rows_with_multiple_annotations <- c(1:nrow(indelmat_less))[num_dividers > 2]
+  
+  annotations_fixed_less <- as.matrix(indelmat_less)
+  original_nrow <- nrow(annotations_fixed_less)
+  for (j in 1:length(rows_with_multiple_annotations)){
+    annotations_fixed_less <- split_any_annotations(annotations_fixed_less, rows_with_multiple_annotations[j])
+  }
+  
+  # STEPH: this is the logical I added to capture where the split annotations end up. 
+  # Each time through the loop a new row gets appended to the end of the matrix, 
+  # which means that all of the rows between the original nrow and the new nrow
+  # are these "duplicates"/second half of the split annotations
+  second_split_of_annotation <- c(rep(FALSE, original_nrow), rep(TRUE, (nrow(annotations_fixed_less) - original_nrow)))
+  
+  # SPLIT UP COMPONENTS 
+  annotation_components <- strsplit(row.names(annotations_fixed_less), "\\|")
+  
+  # GET FUNCTIONAL ANNOTATION - PHAGE, REPEATS, MASKED 
+  flag = strsplit(row.names(annotations_fixed_less), ';') %>% sapply(., function(x){x[1]}) %>% gsub('^.*functional=', '', .)
+  
+  phage = sapply(strsplit(flag, '_'), function(x){x[1]}) =='PHAGE'
+  repeats = sapply(strsplit(flag, '_'), function(x){x[2]}) =='REPEATS'
+  # note: MASK might not be the right word but I don't have any in my data set so need to ask Ali 
+  masked = sapply(strsplit(flag, '_'), function(x){x[3]}) == 'MASK'
+  
+  # GRAB PREDICTION OF FUNCTIONAL IMPACT OF EACH INDEL 
+  snpeff_prediction <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][3])
+  
+  snpeff_low <- snpeff_moderate <- snpeff_high <- snpeff_modifier <- snpeff_prediction
+  
+  snpeff_low[snpeff_low != "LOW"] = FALSE 
+  snpeff_low[snpeff_low == "LOW"] = TRUE
+  snpeff_low = as.logical(snpeff_low)
+  
+  snpeff_moderate[snpeff_moderate != "MODERATE"] <- FALSE
+  snpeff_moderate[snpeff_moderate == "MODERATE"] <- TRUE
+  snpeff_moderate = as.logical(snpeff_moderate)
+  
+  snpeff_high[snpeff_high != "HIGH"] <- FALSE
+  snpeff_high[snpeff_high == "HIGH"] <- TRUE
+  snpeff_high = as.logical(snpeff_high)
+  
+  snpeff_modifier[snpeff_modifier != "MODIFIER"] <- FALSE
+  snpeff_modifier[snpeff_modifier == "MODIFIER"] <- TRUE
+  snpeff_modifier = as.logical(snpeff_modifier)
+  
+  # GET INDEL's GENOMIC POSITION
+  pos <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][1])
+  pos <- as.numeric(gsub(".* at (\\d+) >.*", "\\1", pos))
+  
+  # GRAB SnpEff's DESCRIPTION OF THE INDEL
+  # [1] "conservative_inframe_deletion"                     
+  # [2] "conservative_inframe_insertion"                    
+  # [3] "disruptive_inframe_deletion"                       
+  # [4] "disruptive_inframe_insertion"                      
+  # [5] "frameshift_variant"                                
+  # [6] "frameshift_variant&splice_region_variant"          
+  # [7] "frameshift_variant&start_lost"                     
+  # [8] "frameshift_variant&stop_gained"                    
+  # [9] "frameshift_variant&stop_lost&splice_region_variant"
+  # [10] "intergenic_region"                                 
+  # [11] "intragenic_variant"                                
+  # [12] "start_lost&conservative_inframe_deletion"
+  
+  
+  var_type <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][2])
+  
+  intergenic = var_type == 'intergenic_region'
+  
+  intragenic = var_type == 'intragenic_variant'
+  
+  conservative_inframe_deletion = var_type == 'conservative_inframe_deletion'
+  
+  conservative_inframe_insertion_plus = var_type %in% c('conservative_inframe_insertion', "conservative_inframe_insertion&splice_region_variant")
+  
+  disruptive_inframe_deletion = var_type == 'disruptive_inframe_deletion'
+  
+  frameshift_variant = var_type %in% c('frameshift_variant', 
+                                       'frameshift_variant&splice_region_variant', 
+                                       'frameshift_variant&start_lost', 
+                                       'frameshift_variant&stop_gained', 
+                                       'frameshift_variant&stop_lost&splice_region_variant', 
+                                       "frameshift_variant&splice_region_variant")
+  
+  start_lost_plus = var_type %in% c("start_lost&conservative_inframe_deletion",
+                                    "start_lost&disruptive_inframe_insertion")
+  
+  gene_fusion_plus = var_type %in% c('bidirectional_gene_fusion', "gene_fusion")
+  
+  stop_gained_plus = var_type %in% c("stop_gained&conservative_inframe_insertion", 
+                                     "stop_gained&disruptive_inframe_insertion")
+  
+  stop_lost_plus = var_type %in% c("stop_lost&disruptive_inframe_insertion&splice_region_variant", 
+                                   "stop_lost&conservative_inframe_deletion&splice_region_variant",
+                                   "stop_lost&splice_region_variant")
+  
+  synonymous = var_type == "synonymous_variant"
+  
+  disruptive_inframe_insertion = var_type == "disruptive_inframe_insertion"
+  
+  missense_variant = var_type == "missense_variant"
+  
+  # GET GENE ID 
+  # sometimes it's the gene symbol and sometimes its USA300HOU_#### - i need them all in the latter format 
+  genes <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][4]) # gene ID
+  
+  # GET GENE ID OF THE GENES FLANKING AN INTERGENIC SNP
+  ig_gene1 <- ig_gene2 <- genes
+  # FIRST BUG
+  ig_gene1[intergenic] <- gsub("[-].*", "", genes[intergenic])
+  ig_gene2[intergenic] <- gsub(".*[-]", "", genes[intergenic])
+  
+  
+  
+  #### GET NUCLEOTIDE CHANGE 
+  #"n.62545A>C" - nuc's in this format should be a SNP, it is incorrectly in the indel table 
+  # it occurs when there is a SNP and indel at that site, i think?
+  nuc <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][5])
+  
+  #   LOGICALS INDICATING IF A INDEL IS A DELEITION (DEL), DUPLICATION (DUP), OR INSERTION (INS)
+  del_dup_ins = gsub('^.*[0-9]','', nuc) %>% gsub('[A-Z].*$','', .)
+  del = del_dup_ins == 'del'
+  dup = del_dup_ins == 'dup'
+  ins = del_dup_ins == 'ins'
+  
+  # NUCLEOTIDE SEQ OF DEL, DUP, OR INS
+  nuc_del_dup_ins =  gsub('^.*[a-z]','',nuc)
+  
+  #n_or_c = gsub('[.].*$','', nuc)
+  
+  #nuc[del_dup_ins == 'del']
+  #nuc[del_dup_ins == 'ins']
+  #nuc[del_dup_ins == 'dup']
+  
+  # POSITION WHERE THE DELETION, INSERTION, OR DUPLICATION STARTS AND ENDS 
+  # NOTE: If the del, ins, or dup is only 1 nuc. long, pos2 will be NA 
+  pos_del_dup_ins = gsub('^.*[.]','',nuc) %>% gsub('[a-z].*$','',.) %>% strsplit(., split = '_')
+  
+  temp1 <- gsub('^.*[.]','',nuc) 
+  temp2 <- gsub('[A-Za-z].*$','',temp1) 
+  temp3 <- strsplit(temp2, split = '_')
+  
+  
+  
+  pos1 = unlist(lapply(pos_del_dup_ins, function(i) i[1]))
+  pos2 = unlist(lapply(pos_del_dup_ins, function(i) i[2]))
+  
+  # LENGTH OF THE DELETION, INSERTION, OR DUPLICATION 
+  length_del_dup_ins = nchar(nuc_del_dup_ins)
+  
+  # CALCULATE GENE LENGTH WHERE INDEL OCCURS IN NUCLEOTIDES 
+  gene_length <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][7])
+  gene_length <- gsub("[0-9]+/", "", gene_length)
+  gene_length <- as.numeric(gene_length)
+  
+  # GENE SYMBOL 
+  gene_symbol <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][9])
+  ig_gene1_symbol <- ig_gene2_symbol <- rep(NA, length(gene_symbol))
+  ig_gene1_symbol[intergenic] = strsplit(gene_symbol[intergenic], ',') %>% sapply(., function(x){x[1]})
+  ig_gene2_symbol[intergenic] = strsplit(gene_symbol[intergenic], ',') %>% sapply(., function(x){x[2]})
+  
+  # SAVE ANNOTATIONS AS A SEPARATE OBJECT
+  annots <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][10])
+  
+  # SENSE OF GENE (is the gene on the + or - strand?)
+  # orientation of the gene (+ or - strand) to be added later, once the gene locus is provided 
+  
+  parsed = list(mat=annotations_fixed_less,
+                phage=phage,
+                repeats=repeats,
+                masked=masked,
+                snpeff_prediction=snpeff_prediction,
+                snpeff_low=snpeff_low,
+                snpeff_moderate=snpeff_moderate,
+                snpeff_high=snpeff_high,
+                snpeff_modifier=snpeff_modifier,
+                pos=pos,
+                genes=genes,
+                nuc=nuc,
+                var_type=var_type,
+                s_mut=s_mut,
+                ns_mut=ns_mut,
+                intergenic=intergenic,
+                intragenic=intragenic,
+                conservative_inframe_deletion=conservative_inframe_deletion,
+                conservative_inframe_insertion_plus=conservative_inframe_insertion_plus,
+                disruptive_inframe_deletion=disruptive_inframe_deletion,
+                frameshift_variant=frameshift_variant,
+                start_lost_plus=start_lost_plus,
+                gene_fusion_plus=gene_fusion_plus,
+                gene_fusion_plus=gene_fusion_plus,
+                synonymous=synonymous,
+                disruptive_inframe_insertion=disruptive_inframe_insertion,
+                missense_variant=missense_variant,
+                ig_gene1=ig_gene1,
+                ig_gene2=ig_gene2,
+                del_dup_ins=del_dup_ins,
+                del=del,
+                dup=dup,
+                ins=ins,
+                nuc_del_dup_ins=nuc_del_dup_ins,
+                pos_del_dup_ins=pos_del_dup_ins,
+                pos1=pos1,
+                pos2=pos2,
+                length_del_dup_ins=length_del_dup_ins,
+                gene_length=gene_length,
+                gene_symbol=gene_symbol,
+                ig_gene1_symbol=ig_gene1_symbol,
+                ig_gene2_symbol=ig_gene2_symbol,
+                annots=annots)
+  
+  save(parsed, file = paste0(format(Sys.time(), "%Y-%m-%d"),'_indelmat_parsed.RData'))
+  
+  return(parsed)
+  
+  
+  
+} #end parse_indels
 
