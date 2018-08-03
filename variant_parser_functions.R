@@ -356,6 +356,7 @@ parse_indels = function(indelmat){
   for (j in 1:length(rows_with_multiple_annotations)){
     annotations_fixed_less <- split_any_annotations(annotations_fixed_less, rows_with_multiple_annotations[j])
   }
+  colnames(annotations_fixed_less) = colnames(indelmat)
   
   # STEPH: this is the logical I added to capture where the split annotations end up. 
   # Each time through the loop a new row gets appended to the end of the matrix, 
@@ -529,8 +530,6 @@ parse_indels = function(indelmat){
                 genes=genes,
                 nuc=nuc,
                 var_type=var_type,
-                s_mut=s_mut,
-                ns_mut=ns_mut,
                 intergenic=intergenic,
                 intragenic=intragenic,
                 conservative_inframe_deletion=conservative_inframe_deletion,
