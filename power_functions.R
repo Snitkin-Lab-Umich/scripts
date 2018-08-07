@@ -37,6 +37,7 @@ get_min_snp_dists = function(aln,aln_phen,phen_interest){
 }
 
 # Function to calculate power of identifying associations in loci using pairs of isolates or chi-square test
+# Note: This assumes two discrete phenotypes
 # Input:
 # 1) aln - alignment (to calculatepairwise snp distance)
 # 2) tree - tree (to collapse isolates by monphyletic group)
@@ -62,31 +63,37 @@ power_locus = function(aln,tree,phen,phen_interest,genome_length,gene_lengths,
   aln = aln[!rownames(aln) %in% no_phen,]
   tree = drop.tip(tree,no_phen)
   
+  # match phenotypes to alignment
   aln_phen = sapply(rownames(aln), function(x) phen[names(phen) == x])
   names(aln_phen) = rownames(aln)
   
+  # match phenotypes to tree tips
   tip_phen = sapply(tree$tip.label, function(x) phen[names(phen) == x])
   names(tip_phen) = tree$tip.label
   
+  # get names of phenotypes
   phen_names = names(table(phen))[names(table(phen)) != '']
   
   # get minimum pairwise snp distances for phenotype pairs
   snpdist = dist.dna(aln,model = 'N',as.matrix = T)
-  
   min_dists = get_min_snp_dists(aln,aln_phen,phen_interest)
   
   # raw count (not correcting for clusters on tree)
   phen_count = sum(aln_phen == phen_interest)
   
+  # average pairwise distance
   avg_snpdist_pairs = round(mean(min_dists),1)
+  
+  # calculate power
   pow = powerCalculatorLocus(k = genome_length,s = avg_snpdist_pairs,f = effect_size,n = phen_count,gl = gene_lengths)
   
   # df_chisq = number of classes - 1
   pow_chisq = pwr.chisq.test(w = effect_size, N = length(tip_phen), df = 1)
+  
   # effect size for power of 80
   es_chisq_80 = pwr.chisq.test(power = 0.8, w = NULL, N = length(tip_phen), df = 1)
   
-  # collapse pure subtrees
+  # collapse pure subtrees and recalculate power
   collapsed_tree = collapse_pure_subtrees(tree,tip_phen)
   
   aln_subset = aln[rownames(aln) %in% collapsed_tree$tip.label,]
@@ -103,6 +110,7 @@ power_locus = function(aln,tree,phen,phen_interest,genome_length,gene_lengths,
   avg_snpdist_pairs_subset = round(mean(min_dists_subset),1)
   pow_subset = powerCalculatorLocus(k = genome_length,s = avg_snpdist_pairs_subset,f = effect_size,n = phen_count_subset,gl = gene_lengths)
   
+  # return results
   return(list(pow=pow,
               avg_snpdist_pairs=avg_snpdist_pairs,
               pow_subset=pow_subset,
