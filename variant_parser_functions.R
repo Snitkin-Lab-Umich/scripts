@@ -28,7 +28,7 @@ split_any_annotations <- function(variant_matrix, num_of_row_with_multiple_annot
     stop("Input a variant matrix")
   }
   if (is.na(num_of_row_with_multiple_annotations)){
-    stop("No rows with multiple annotations")
+    stop("Called split_any_annotations with no rows with multiple annotations")
   }
   if (class(num_of_row_with_multiple_annotations) != "integer" | num_of_row_with_multiple_annotations < 1 | num_of_row_with_multiple_annotations > nrow(variant_matrix)){
     stop("Input a valid row number")
