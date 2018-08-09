@@ -27,6 +27,9 @@ split_any_annotations <- function(variant_matrix, num_of_row_with_multiple_annot
   if (class(variant_matrix) != "matrix"){
     stop("Input a variant matrix")
   }
+  if (is.na(num_of_row_with_multiple_annotations)){
+    stop("No rows with multiple annotations")
+  }
   if (class(num_of_row_with_multiple_annotations) != "integer" | num_of_row_with_multiple_annotations < 1 | num_of_row_with_multiple_annotations > nrow(variant_matrix)){
     stop("Input a valid row number")
   } 
@@ -104,8 +107,10 @@ parse_snps = function(snpmat){
   rows_with_multiple_annotations <- c(1:nrow(snpmat_less))[num_dividers > 2]
   
   annotations_fixed_less <- as.matrix(snpmat_less)
-  for (j in 1:length(rows_with_multiple_annotations)){
-    annotations_fixed_less <- split_any_annotations(annotations_fixed_less, rows_with_multiple_annotations[j])
+  if (length(rows_with_multiple_annotations) != 0){
+    for (j in 1:length(rows_with_multiple_annotations)){
+      annotations_fixed_less <- split_any_annotations(annotations_fixed_less, rows_with_multiple_annotations[j])
+    }
   }
   
   # GET FUNCTIONAL ANNOTATION - PHAGE, REPEATS, MASKED 
