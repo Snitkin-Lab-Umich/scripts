@@ -121,6 +121,11 @@ parse_snps = function(snpmat){
   # note: MASK might not be the right word but I don't have any in my data set so need to ask Ali 
   masked = sapply(strsplit(flag, '_'), function(x){x[3]}) == 'MASK'
   
+  # GET LOCUS TAG
+  locus_tag = strsplit(row.names(annotations_fixed_less), ';') %>% sapply(., function(x){x[1]}) %>% gsub('^.*locus_tag=', '', .)
+  locus_tag_ig_gene1 = sapply(strsplit(locus_tag, '-'), function(lt){lt[1]})
+  locus_tag_ig_gene2 = sapply(strsplit(locus_tag, '-'), function(lt){lt[2]})
+  
   # SPLIT UP COMPONENTS 
   annotation_components <- strsplit(row.names(annotations_fixed_less), "\\|")
   
@@ -526,6 +531,9 @@ parse_indels = function(indelmat){
                 phage=phage,
                 repeats=repeats,
                 masked=masked,
+                locus_tag = locus_tag,
+                locus_tag_ig_gene1 = locus_tag_ig_gene1,
+                locus_tag_ig_gene2 = locus_tag_ig_gene2,
                 snpeff_prediction=snpeff_prediction,
                 snpeff_low=snpeff_low,
                 snpeff_moderate=snpeff_moderate,
