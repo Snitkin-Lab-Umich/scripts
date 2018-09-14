@@ -6,6 +6,7 @@ require(seqinr) # Necessary for converting 3 letter amino acid code to 1 letter 
 library(Biostrings) # SNT: Necessary for loading in BLOSUM matrix 
 data(BLOSUM80) # Necessary for BLOSUM prediction
 library(magrittr) # For piping commands 
+library(stringr) # for counting characters, pipes 
 
 ########################
 # READ IN VARIANT MATRIX
@@ -98,19 +99,52 @@ parse_snps = function(snpmat){
   
   # KS ADDED 2 LINES: drop rows with "None". Temporary fix. What's with these?
   rows_with_none <- as.integer(grep("None", row.names(snpmat_less)))
+  
   # ZL ADDED conditional
   if(length(rows_with_none) > 0){
     snpmat_less <- snpmat_less[-rows_with_none, ]
   }
   
+  # SNT added 2018-09-14
+  # If there are no pipes in the row, remove that row! 
+  rows_with_empty_annots = which(str_count(row.names(snpmat_less), '\\|')==0)
+  if(length(rows_with_empty_annots) > 0){
+    snpmat_less <- snpmat_less[-rows_with_empty_annots, ]
+  }
+  
+  # SNT added 2018-09-14
+  # Might want to change this at some point - removing mutation in the chromosome end
+  # because there are no locus tags that match that 
+  rows_with_chr_end = grep('CHR_END', row.names(snpmat_less))
+  if(length(rows_with_chr_end) > 0){
+    snpmat_less <- snpmat_less[-rows_with_chr_end, ]
+  }
+  
+  
   num_dividers <- sapply(1:nrow(snpmat_less), function(x) lengths(regmatches(row.names(snpmat_less)[x], gregexpr(";", row.names(snpmat_less)[x]))))
-  rows_with_multiple_annotations <- c(1:nrow(snpmat_less))[num_dividers > 2]
+  
+  # rows_with_multiple_annotations <- c(1:nrow(snpmat_less))[num_dividers > 2]
+  # SNT - commented out (Above) and replaced with below
+
+  
+  # changed 2018-09-14
+  # if there are multipe annotations, there must be more than 9 pipes 
+  rows_with_multiple_annotations <- c(1:nrow(snpmat_less))[num_dividers > 2 & str_count(row.names(snpmat_less), '\\|') > 9]
   
   annotations_fixed_less <- as.matrix(snpmat_less)
   if (length(rows_with_multiple_annotations) != 0){
     for (j in 1:length(rows_with_multiple_annotations)){
       annotations_fixed_less <- split_any_annotations(annotations_fixed_less, rows_with_multiple_annotations[j])
     }
+  }
+  
+  # SNT added 2019-09-14
+  # Some annotations have  a semicolon in them, since we are splitting by semicolons, this
+  # messes the parsing up - remove the lines that messed up 
+  pipe_counts = sapply(row.names(annotations_fixed_less), function(i){str_count(i, '\\|')})
+  rows_with_no_pipes = which(pipe_counts ==0)
+  if(length(rows_with_no_pipes) > 0){
+    annotations_fixed_less <- annotations_fixed_less[-rows_with_no_pipes, ]
   }
   
   # GET FUNCTIONAL ANNOTATION - PHAGE, REPEATS, MASKED 
