@@ -30,20 +30,20 @@ if [ $2 = 1 ]; then
   echo Will run gubbins.
   # gubbins command
   gub=$(echo run_gubbins.py --prefix $pref --threads 12 $1)
-  echo $gub > gubbins_command.sh
+  echo $gub > ${pref}_gubbins_command.sh
 
   # raxml command
   raxml=$(echo mpirun -np 2 raxmlHPC-HYBRID-SSE3 -f a -x 12345 -p 12345 -N autoMRE -m ASC_GTRGAMMA --asc-corr=lewis -s $pref.filtered_polymorphic_sites.fasta -n $pref.filtered_polymorphic_sites_raxML-fa-x12345-p12345-NautoMRE-mGTRGAM-lew -T 6)
-echo $raxml > raxml_command.sh
+echo $raxml > ${pref}_raxml_command.sh
 
   # iqtree command
   iqtree=$(echo /nfs/esnitkin/bin_group/anaconda3/bin/iqtree -s $pref.filtered_polymorphic_sites.fasta -nt AUTO -bb 1000 -m MFP -pre $pref)
-  echo $iqtree > iqtree_command.sh
+  echo $iqtree > ${pref}_iqtree_command.sh
   
   # generate pbs scripts for gubbins, raxml, iqtree
-  /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c gubbins_command.sh -o ${pref}_gubbins.pbs -M "$modules" -a $acct
-  /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c iqtree_command.sh -o ${pref}_iqtree.pbs -M "$modules" -a $acct
-  /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c raxml_command.sh -o ${pref}_raxml.pbs -M "$modules" -a $acct
+  /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c ${pref}_gubbins_command.sh -o ${pref}_gubbins.pbs -M "$modules" -a $acct
+  /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c ${pref}_iqtree_command.sh -o ${pref}_iqtree.pbs -M "$modules" -a $acct
+  /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c ${pref}_raxml_command.sh -o ${pref}_raxml.pbs -M "$modules" -a $acct
 
   # start gubbins, iqtree, raxml jobs
   echo qsub ${pref}_gubbins.pbs
@@ -62,15 +62,15 @@ else
 
   # raxml command
   raxml=$(echo mpirun -np 2 raxmlHPC-HYBRID-SSE3 -f a -x 12345 -p 12345 -N autoMRE -m ASC_GTRGAMMA --asc-corr=lewis -s ${pref}_varSites.fa -n $pref_raxML-fa-x12345-p12345-NautoMRE-mGTRGAM-lew -T 6)
-  echo $raxml > raxml_command.sh
+  echo $raxml > ${pref}_raxml_command.sh
 
   # iqtree command
   iqtree=$(echo /nfs/esnitkin/bin_group/anaconda3/bin/iqtree -s ${pref}_varSites.fa -nt AUTO -bb 1000 -m MFP+ASC -pre ${pref}_varSites)
-  echo $iqtree > iqtree_command.sh
+  echo $iqtree > ${pref}_iqtree_command.sh
 
   # generate pbs scripts for iqtree, raxml
-  /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c iqtree_command.sh -o ${pref}_iqtree.pbs -M "$modules" -a $acct
-  /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c raxml_command.sh -o ${pref}_raxml.pbs -M "$modules" -a $acct
+  /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c ${pref}_iqtree_command.sh -o ${pref}_iqtree.pbs -M "$modules" -a $acct
+  /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c ${pref}_raxml_command.sh -o ${pref}_raxml.pbs -M "$modules" -a $acct
 
   # start iqtree, raxml jobs
   echo qsub ${pref}_iqtree.pbs
