@@ -397,10 +397,13 @@ parse_indels = function(indelmat){
   
   annotations_fixed_less <- as.matrix(indelmat_less)
   original_nrow <- nrow(annotations_fixed_less)
-  for (j in 1:length(rows_with_multiple_annotations)){
-    annotations_fixed_less <- split_any_annotations(annotations_fixed_less, rows_with_multiple_annotations[j])
+  if(length(rows_with_multiple_annotations) != 0){
+    for (j in 1:length(rows_with_multiple_annotations)){
+      annotations_fixed_less <- split_any_annotations(annotations_fixed_less, rows_with_multiple_annotations[j])
+    }
   }
   colnames(annotations_fixed_less) = colnames(indelmat)
+  
   
   # STEPH: this is the logical I added to capture where the split annotations end up. 
   # Each time through the loop a new row gets appended to the end of the matrix, 
@@ -565,9 +568,9 @@ parse_indels = function(indelmat){
                 phage=phage,
                 repeats=repeats,
                 masked=masked,
-                locus_tag = locus_tag,
-                locus_tag_ig_gene1 = locus_tag_ig_gene1,
-                locus_tag_ig_gene2 = locus_tag_ig_gene2,
+                #locus_tag = locus_tag,
+                #locus_tag_ig_gene1 = locus_tag_ig_gene1,
+                #locus_tag_ig_gene2 = locus_tag_ig_gene2,
                 snpeff_prediction=snpeff_prediction,
                 snpeff_low=snpeff_low,
                 snpeff_moderate=snpeff_moderate,
