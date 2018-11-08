@@ -42,11 +42,7 @@
 #     list of chars
 
 # PACKAGES ---------------------------------------------------------------------
-<<<<<<< HEAD
 suppressWarnings(library(data.table))
-=======
-library(data.table)
->>>>>>> 6207a2ead35508f43f80c3128983a5b98a525f33
 
 # LIBRARY ----------------------------------------------------------------------
 report_data_summary <- function(vcf){
