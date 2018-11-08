@@ -5,13 +5,8 @@
 suppressMessages(require(seqinr)) # Necessary for converting 3 letter amino acid code to 1 letter amino acid code
 suppressMessages(library(Biostrings)) # SNT: Necessary for loading in BLOSUM matrix 
 data(BLOSUM80) # Necessary for BLOSUM prediction
-<<<<<<< HEAD
 suppressMessages(library(magrittr)) # For piping commands 
 suppressMessages(library(stringr)) # for counting characters, pipes 
-=======
-library(magrittr) # For piping commands 
-library(stringr) # for counting characters, pipes 
->>>>>>> 6207a2ead35508f43f80c3128983a5b98a525f33
 
 ########################
 # READ IN VARIANT MATRIX
@@ -130,10 +125,6 @@ parse_snps = function(snpmat){
     snpmat_less <- snpmat_less[-rows_with_chr_end, ]
   }
   
-<<<<<<< HEAD
-=======
-  
->>>>>>> 6207a2ead35508f43f80c3128983a5b98a525f33
   num_dividers <- sapply(1:nrow(snpmat_less), function(x) lengths(regmatches(row.names(snpmat_less)[x], gregexpr(";", row.names(snpmat_less)[x]))))
   
   # rows_with_multiple_annotations <- c(1:nrow(snpmat_less))[num_dividers > 2]
@@ -308,12 +299,9 @@ parse_snps = function(snpmat){
                      phage=phage,
                      repeats=repeats,
                      masked=masked,
-<<<<<<< HEAD
                      locus_tag = locus_tag,
                      locus_tag_ig_gene1 = locus_tag_ig_gene1,
                      locus_tag_ig_gene2 = locus_tag_ig_gene2,
-=======
->>>>>>> 6207a2ead35508f43f80c3128983a5b98a525f33
                      snpeff_prediction=snpeff_prediction,
                      snpeff_low=snpeff_low,
                      snpeff_moderate=snpeff_moderate,
@@ -351,7 +339,6 @@ parse_snps = function(snpmat){
   return(parsed)
   
 } #end parse_snps
-<<<<<<< HEAD
 
 # ZL - not sure what's going on here, so commented it out until we can put it in a function
 # # READ IN GENE_LOC FILE 
@@ -382,38 +369,6 @@ parse_snps = function(snpmat){
 # LIBRARY 
 ########################
 
-=======
-
-# ZL - not sure what's going on here, so commented it out until we can put it in a function
-# # READ IN GENE_LOC FILE 
-# gene_info = read.table('./KPNIH1_gene_loc.txt', sep = "\t", header = TRUE, row.names = 1)
-# gene_loc_raw = cbind(gene_info[,1] - 27084, gene_info[,2]-27084)
-# row.names(gene_loc_raw) = as.matrix(gsub("^USA300_TCH1516_genome:", "", row.names(gene_info), perl=TRUE))
-# gene_loc = gene_loc_raw[grep("pUSA", row.names(gene_loc_raw) ,invert = TRUE),];
-# 
-# # RE-ASSIGN GENE NAME BASED ON FORMAT IN REF GENOME (in my case USA300HOU_####) AND NOT GENE SYMBOL
-# 
-# 
-# # SENSE OF GENES
-# # will assign genes with sense once I update the gene name above 
-# sense = rep(NA, length(gene_loc[,1]))
-# sense[gene_loc[,1] < gene_loc[,2]] = '+'
-# sense[gene_loc[,1] > gene_loc[,2]] = '-'
-
-
-#### Indel Parser Function ####
-
-# 2018-07-30
-# KS forked from ST'd indel_parser.R
-# ------------------------------------------------------------------------------
-
-# KATIE - can you add a logical to indicate where the split rows are (i.e. the duplicated annotations) -- STEPH: see new variable: second_split_of_annotation
-
-########################
-# LIBRARY 
-########################
-
->>>>>>> 6207a2ead35508f43f80c3128983a5b98a525f33
 # parse indel matrix function
 # input:
 # 1) indel matrix
@@ -449,22 +404,11 @@ parse_indels = function(indelmat){
   
   annotations_fixed_less <- as.matrix(indelmat_less)
   original_nrow <- nrow(annotations_fixed_less)
-<<<<<<< HEAD
   for (j in 1:length(rows_with_multiple_annotations)){
     annotations_fixed_less <- split_any_annotations(annotations_fixed_less, rows_with_multiple_annotations[j])
   }
   colnames(annotations_fixed_less) = colnames(indelmat)
   
-=======
-  if(length(rows_with_multiple_annotations) != 0){
-    for (j in 1:length(rows_with_multiple_annotations)){
-      annotations_fixed_less <- split_any_annotations(annotations_fixed_less, rows_with_multiple_annotations[j])
-    }
-  }
-  colnames(annotations_fixed_less) = colnames(indelmat)
-  
-  
->>>>>>> 6207a2ead35508f43f80c3128983a5b98a525f33
   # STEPH: this is the logical I added to capture where the split annotations end up. 
   # Each time through the loop a new row gets appended to the end of the matrix, 
   # which means that all of the rows between the original nrow and the new nrow
@@ -628,15 +572,9 @@ parse_indels = function(indelmat){
                 phage=phage,
                 repeats=repeats,
                 masked=masked,
-<<<<<<< HEAD
                 locus_tag = locus_tag,
                 locus_tag_ig_gene1 = locus_tag_ig_gene1,
                 locus_tag_ig_gene2 = locus_tag_ig_gene2,
-=======
-                #locus_tag = locus_tag,
-                #locus_tag_ig_gene1 = locus_tag_ig_gene1,
-                #locus_tag_ig_gene2 = locus_tag_ig_gene2,
->>>>>>> 6207a2ead35508f43f80c3128983a5b98a525f33
                 snpeff_prediction=snpeff_prediction,
                 snpeff_low=snpeff_low,
                 snpeff_moderate=snpeff_moderate,
