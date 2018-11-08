@@ -1,0 +1,44 @@
+cd /scratch/esnitkin_fluxod/apirani/Project_Nursing_Home/Analysis/2017_10_28_HGT_Mummer_analysis/generate_matrix
+
+ls /scratch/esnitkin_fluxod/apirani/Project_Nursing_Home/Analysis/2017_10_28_HGT_Mummer_analysis/fasta_files/*.fasta | awk -F'/' '{print $(NF)}' > filenames
+
+ls /scratch/esnitkin_fluxod/apirani/Project_Nursing_Home/Analysis/2017_10_28_HGT_Mummer_analysis/Results/Results_parse_3/same_patient_different_species_same_facility/ariba_database/dedup_cluster/extracted_fasta/fasta_headers/*.fasta | awk -F'/' '{print $(NF)}'> same_patient_different_species_same_facility_nucmer_db_filenames
+
+
+Put the below command in a pbs script and submit the job:
+
+```
+cd /scratch/esnitkin_fluxod/apirani/Project_Nursing_Home/Analysis/2017_10_28_HGT_Mummer_analysis/generate_matrix
+~/anaconda/bin/python /nfs/esnitkin/bin_group/scripts/Scripts_v2.0/recombination_analysis/recombination_analysis.py -filename filenames -out /scratch/esnitkin_fluxod/apirani/Project_Nursing_Home/Analysis/2017_10_28_HGT_Mummer_analysis/generate_matrix/same_patient_different_species_same_facility/ -dir /scratch/esnitkin_fluxod/apirani/Project_Nursing_Home/Analysis/2017_10_28_HGT_Mummer_analysis/fasta_files/ -steps 4 -prokka_dir /scratch/esnitkin_fluxod/apirani/Project_Nursing_Home/Analysis/2017_10_28_HGT_Mummer_analysis/2017_10_28_HGT_Mummer_analysis_annotations/ -jobrun parallel-local -filename_db same_patient_different_species_same_facility_nucmer_db_filenames_nucmer_db_filenames -dir_db /scratch/esnitkin_fluxod/apirani/Project_Nursing_Home/Analysis/2017_10_28_HGT_Mummer_analysis/Results/Results_parse_3/same_patient_different_species_same_facility/ariba_database/dedup_cluster/extracted_fasta/fasta_headers/
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+===========
+cd /scratch/esnitkin_fluxod/apirani/Project_Nursing_Home/Analysis/2017_10_28_HGT_Mummer_analysis/generate_matrix
+
+ls /scratch/esnitkin_fluxod/apirani/Project_Nursing_Home/Analysis/2017_10_28_HGT_Mummer_analysis/Results/Results_parse_3/different_patient_different_species_same_facility/ariba_database/dedup_cluster/extracted_fasta/fasta_headers/*.fasta | awk -F'/' '{print $(NF)}'> different_patient_different_species_different_facility_nucmer_db_filenames
+
+
+Put the below command in a pbs script and submit the job:
+
+```
+cd /scratch/esnitkin_fluxod/apirani/Project_Nursing_Home/Analysis/2017_10_28_HGT_Mummer_analysis/generate_matrix
+~/anaconda/bin/python /nfs/esnitkin/bin_group/scripts/Scripts_v2.0/recombination_analysis/recombination_analysis.py -filename filenames -out /scratch/esnitkin_fluxod/apirani/Project_Nursing_Home/Analysis/2017_10_28_HGT_Mummer_analysis/generate_matrix/different_patient_different_species_same_facility/ -dir /scratch/esnitkin_fluxod/apirani/Project_Nursing_Home/Analysis/2017_10_28_HGT_Mummer_analysis/fasta_files/ -steps 4 -prokka_dir /scratch/esnitkin_fluxod/apirani/Project_Nursing_Home/Analysis/2017_10_28_HGT_Mummer_analysis/2017_10_28_HGT_Mummer_analysis_annotations/ -jobrun parallel-local -filename_db different_patient_different_species_different_facility_nucmer_db_filenames -dir_db /scratch/esnitkin_fluxod/apirani/Project_Nursing_Home/Analysis/2017_10_28_HGT_Mummer_analysis/Results/Results_parse_3/different_patient_different_species_same_facility/ariba_database/dedup_cluster/extracted_fasta/fasta_headers/
+```

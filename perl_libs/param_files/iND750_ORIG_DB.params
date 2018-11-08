@@ -1,0 +1,3 @@
+data_source	dbi:mysql:SC_iND750_ORIG
+biomass_rxn	R_biomass_SC4_bal
+KO_percen_growth	.1

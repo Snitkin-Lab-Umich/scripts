@@ -42,7 +42,7 @@
 #     list of chars
 
 # PACKAGES ---------------------------------------------------------------------
-library(data.table)
+suppressWarnings(library(data.table))
 
 # LIBRARY ----------------------------------------------------------------------
 report_data_summary <- function(vcf){

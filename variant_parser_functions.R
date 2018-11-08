@@ -2,11 +2,11 @@
 ##################
 # REQUIRE LIBRARIES
 ###################
-require(seqinr) # Necessary for converting 3 letter amino acid code to 1 letter amino acid code
-library(Biostrings) # SNT: Necessary for loading in BLOSUM matrix 
+suppressMessages(require(seqinr)) # Necessary for converting 3 letter amino acid code to 1 letter amino acid code
+suppressMessages(library(Biostrings)) # SNT: Necessary for loading in BLOSUM matrix 
 data(BLOSUM80) # Necessary for BLOSUM prediction
-library(magrittr) # For piping commands 
-library(stringr) # for counting characters, pipes 
+suppressMessages(library(magrittr)) # For piping commands 
+suppressMessages(library(stringr)) # for counting characters, pipes 
 
 ########################
 # READ IN VARIANT MATRIX
@@ -86,6 +86,7 @@ parse_snps = function(snpmat){
   }
   snpmat = snpmat[!is.na(row.names(snpmat)),] #remove blank lines
   
+  
   #### SPLIT UP THE MATRIX #### 
   
   # GET ROWS WITH MULTIPLE ALLELES:
@@ -95,7 +96,11 @@ parse_snps = function(snpmat){
   rows_with_duplicate_alleles = as.integer(grep(',', alleles))
   
   # temporary change - need to fix when we figure out what's going on with these 
-  snpmat_less <- snpmat[-rows_with_duplicate_alleles,]
+  if(length(rows_with_duplicate_alleles) != 0){
+    snpmat_less <- snpmat[-rows_with_duplicate_alleles,]
+  }else{
+    snpmat_less <- snpmat
+  }
   
   # KS ADDED 2 LINES: drop rows with "None". Temporary fix. What's with these?
   rows_with_none <- as.integer(grep("None", row.names(snpmat_less)))
@@ -119,7 +124,6 @@ parse_snps = function(snpmat){
   if(length(rows_with_chr_end) > 0){
     snpmat_less <- snpmat_less[-rows_with_chr_end, ]
   }
-  
   
   num_dividers <- sapply(1:nrow(snpmat_less), function(x) lengths(regmatches(row.names(snpmat_less)[x], gregexpr(";", row.names(snpmat_less)[x]))))
   
@@ -295,6 +299,9 @@ parse_snps = function(snpmat){
                      phage=phage,
                      repeats=repeats,
                      masked=masked,
+                     locus_tag = locus_tag,
+                     locus_tag_ig_gene1 = locus_tag_ig_gene1,
+                     locus_tag_ig_gene2 = locus_tag_ig_gene2,
                      snpeff_prediction=snpeff_prediction,
                      snpeff_low=snpeff_low,
                      snpeff_moderate=snpeff_moderate,
@@ -397,13 +404,10 @@ parse_indels = function(indelmat){
   
   annotations_fixed_less <- as.matrix(indelmat_less)
   original_nrow <- nrow(annotations_fixed_less)
-  if(length(rows_with_multiple_annotations) != 0){
-    for (j in 1:length(rows_with_multiple_annotations)){
-      annotations_fixed_less <- split_any_annotations(annotations_fixed_less, rows_with_multiple_annotations[j])
-    }
+  for (j in 1:length(rows_with_multiple_annotations)){
+    annotations_fixed_less <- split_any_annotations(annotations_fixed_less, rows_with_multiple_annotations[j])
   }
   colnames(annotations_fixed_less) = colnames(indelmat)
-  
   
   # STEPH: this is the logical I added to capture where the split annotations end up. 
   # Each time through the loop a new row gets appended to the end of the matrix, 
@@ -568,9 +572,9 @@ parse_indels = function(indelmat){
                 phage=phage,
                 repeats=repeats,
                 masked=masked,
-                #locus_tag = locus_tag,
-                #locus_tag_ig_gene1 = locus_tag_ig_gene1,
-                #locus_tag_ig_gene2 = locus_tag_ig_gene2,
+                locus_tag = locus_tag,
+                locus_tag_ig_gene1 = locus_tag_ig_gene1,
+                locus_tag_ig_gene2 = locus_tag_ig_gene2,
                 snpeff_prediction=snpeff_prediction,
                 snpeff_low=snpeff_low,
                 snpeff_moderate=snpeff_moderate,

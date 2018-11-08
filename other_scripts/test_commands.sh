@@ -1,0 +1,2 @@
+ls ~/bin
+cp ~/scripts ~/

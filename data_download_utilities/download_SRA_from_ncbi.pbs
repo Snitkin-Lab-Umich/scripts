@@ -1,0 +1,23 @@
+#PBS -N download_fastq
+#PBS -M apirani@med.umich.edu
+#PBS -m abe
+#PBS -V
+#PBS -l nodes=1:ppn=12,pmem=4000mb,walltime=90:00:00
+#PBS -q fluxod
+#PBS -A esnitkin_fluxod
+#PBS -l qos=flux
+
+# Change the path below to directory where you want to download the sra files
+cd ~/
+
+# Make sure your SRA accession list file only contains accession number. Make sure the name of the list file is SRR_list_download.txt
+for i in `cat SRR_list_download.txt`; do code=`echo $i | cut -c1-3`; acc_code=`echo $i | cut -c1-6`; suffix=".sra"; wget="wget ftp://ftp-trace.ncbi.nih.gov/sra/sra-instant/reads/ByRun/sra/"; sep="/"; echo $wget$sep$code$sep$acc_code$sep$i$sep$i$suffix; done > wget_commands.sh
+
+# The below python script will take the wget commands generated above and run parallelly.
+~/anaconda/bin/python /nfs/esnitkin/bin_group/scripts/run_commands_parallel.py -command wget_commands.sh
+
+#Generate SRA to fastq commands
+for i in *.sra; do echo "/nfs/esnitkin/bin_group/sratoolkit.2.8.2-1-ubuntu64/bin/fastq-dump --split-files --gzip $i"; done > convert_sra_to_fastq.sh
+
+# The below python script will take the sra to fastq commands generated above and run parallelly.
+~/anaconda/bin/python /nfs/esnitkin/bin_group/scripts/run_commands_parallel.py -command convert_sra_to_fastq.sh

@@ -1,0 +1,2 @@
+data_source	dbi:mysql:SC_FBA_models
+KO_percen_growth	.1

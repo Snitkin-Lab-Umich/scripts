@@ -1,0 +1,10 @@
+wget ftp://ftp-trace.ncbi.nih.gov/sra/sra-instant/reads/ByRun/sra//ERR/ERR376/ERR376660/ERR376660.sra
+wget ftp://ftp-trace.ncbi.nih.gov/sra/sra-instant/reads/ByRun/sra//ERR/ERR376/ERR376661/ERR376661.sra
+wget ftp://ftp-trace.ncbi.nih.gov/sra/sra-instant/reads/ByRun/sra//ERR/ERR485/ERR485159/ERR485159.sra
+wget ftp://ftp-trace.ncbi.nih.gov/sra/sra-instant/reads/ByRun/sra//ERR/ERR332/ERR332123/ERR332123.sra
+wget ftp://ftp-trace.ncbi.nih.gov/sra/sra-instant/reads/ByRun/sra//ERR/ERR376/ERR376662/ERR376662.sra
+wget ftp://ftp-trace.ncbi.nih.gov/sra/sra-instant/reads/ByRun/sra//ERR/ERR332/ERR332124/ERR332124.sra
+wget ftp://ftp-trace.ncbi.nih.gov/sra/sra-instant/reads/ByRun/sra//ERR/ERR376/ERR376663/ERR376663.sra
+wget ftp://ftp-trace.ncbi.nih.gov/sra/sra-instant/reads/ByRun/sra//ERR/ERR332/ERR332125/ERR332125.sra
+wget ftp://ftp-trace.ncbi.nih.gov/sra/sra-instant/reads/ByRun/sra//ERR/ERR376/ERR376664/ERR376664.sra
+wget ftp://ftp-trace.ncbi.nih.gov/sra/sra-instant/reads/ByRun/sra//ERR/ERR332/ERR332126/ERR332126.sra

@@ -1,0 +1,4 @@
+data_source	dbi:mysql:SC_iFF708_mod_3
+biomass_rxn	BIOMASS_1
+KO_percen_growth	.1
+model	iFF708_mod_3
