@@ -1,13 +1,12 @@
 __author__ = 'alipirani'
 
-
 import os
 import readline
 import argparse
 from joblib import Parallel, delayed
 import multiprocessing
-parser = argparse.ArgumentParser(description='Alignment using Muscle')
-parser.add_argument('-command', action='store', dest="command", help='command file containing commands for aligning each fasta file')
+parser = argparse.ArgumentParser(description='This scripts runs the Commands provided in a file with command Parallelely')
+parser.add_argument('-command', action='store', dest="command", help='command file containing commands you want to run in parallel')
 args = parser.parse_args()
 
 #print args.filenames
@@ -24,3 +23,7 @@ def run_command(i):
     done = "done"
     return done
 results = Parallel(n_jobs=num_cores)(delayed(run_command)(i) for i in command_array)
+
+
+
+

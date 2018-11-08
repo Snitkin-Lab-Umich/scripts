@@ -5,6 +5,7 @@ import re
 import os
 import csv
 import subprocess
+import vcf
 from collections import OrderedDict
 from collections import defaultdict
 from joblib import Parallel, delayed
@@ -78,6 +79,7 @@ for j in position_array_sort:
     # Changing Grep command 25 jan
     #cmd = "grep -wP \'\s+" + j + "\s+\' " + file
     cmd = "grep -v \'^#\' %s | awk -F\'\t\' \'{print $2}\' | grep -w \'%s\'" % (file, j)
+    filter2_only_snp_vcf_reader = vcf.Reader(open('%s' % file, 'r'))
     proc = subprocess.Popen([cmd], stdout=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
     out = out.strip()
