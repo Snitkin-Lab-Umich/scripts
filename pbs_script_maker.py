@@ -48,6 +48,10 @@ parser.add_argument('-a', '--acct', metavar='ACCOUNT', type=str,
                     default='esnitkin_flux',
                     help='''flux account to submit pbs script to
                     (default: esnitkin_flux)''')
+parser.add_argument('-wd', '--wd', metavar='WD', type=str,
+                    default='$PBS_O_WORKDIR',
+                    help='''directory to submit pbs script from
+                    (default: $PBS_O_WORKDIR)''')
 
 args = parser.parse_args()
 
@@ -62,6 +66,7 @@ qos = acct.split('_')[-1]
 modules = args.modules
 commands = args.commands
 outfile = args.outfile
+wd = args.wd
 
 
 if args.jobname is None:
@@ -107,7 +112,9 @@ print('#!/bin/sh',
       'if [ -n "$PBS_NODEFILE" ]; then cat $PBS_NODEFILE; fi',
       '',
       '#  Change to the directory you submitted from',
-      'cd $PBS_O_WORKDIR',
+      '#cd $PBS_O_WORKDIR',
+      'cd {}'.format(wd),
+      'echo {}'.format(wd),
       '',
       '# Load modules',
       'module load {}'.format(modules),
