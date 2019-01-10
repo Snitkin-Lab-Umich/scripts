@@ -1,0 +1,53 @@
+BLASTN 2.2.21 [Jun-14-2009]
+
+
+Reference: Altschul, Stephen F., Thomas L. Madden, Alejandro A. Schaffer, 
+Jinghui Zhang, Zheng Zhang, Webb Miller, and David J. Lipman (1997), 
+"Gapped BLAST and PSI-BLAST: a new generation of protein database search
+programs",  Nucleic Acids Res. 25:3389-3402.
+
+Query= Oligo
+         (70 letters)
+
+Database: EC_galK 
+           1 sequences; 1149 total letters
+
+Searching..................................................done
+
+ ***** No hits found ******
+
+
+  Database: EC_galK
+    Posted date:  Aug 13, 2012 10:37 AM
+  Number of letters in database: 1149
+  Number of sequences in database:  1
+  
+Lambda     K      H
+    1.37    0.711     1.31 
+
+Gapped
+Lambda     K      H
+    1.37    0.711     1.31 
+
+
+Matrix: blastn matrix:1 -3
+Gap Penalties: Existence: 5, Extension: 2
+Number of Sequences: 1
+Number of Hits to DB: 3
+Number of extensions: 1
+Number of successful extensions: 1
+Number of sequences better than 1.0e-10: 0
+Number of HSP's gapped: 1
+Number of HSP's successfully gapped: 0
+Length of query: 70
+Length of database: 1149
+Length adjustment: 8
+Effective length of query: 62
+Effective length of database: 1141
+Effective search space:    70742
+Effective search space used:    70742
+X1: 11 (21.8 bits)
+X2: 15 (29.7 bits)
+X3: 50 (99.1 bits)
+S1: 11 (22.3 bits)
+S2: 25 (50.1 bits)

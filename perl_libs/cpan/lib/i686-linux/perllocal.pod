@@ -1,0 +1,44 @@
+=head2 Wed Aug 12 11:32:45 2009: C<Module> L<Cwd|Cwd>
+
+=over 4
+
+=item *
+
+C<installed into: /home/snitkine/Perl/cpan/lib>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 3.30>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Wed Aug 12 13:51:19 2009: C<Module> L<Cwd|Cwd>
+
+=over 4
+
+=item *
+
+C<installed into: /home/snitkine/Perl/cpan/lib>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 3.30>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+

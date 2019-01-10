@@ -2,7 +2,7 @@
 ##################
 # REQUIRE LIBRARIES
 ###################
-suppressMessages(require(seqinr)) # Necessary for converting 3 letter amino acid code to 1 letter amino acid code
+suppressMessages(library(seqinr)) # Necessary for converting 3 letter amino acid code to 1 letter amino acid code
 suppressMessages(library(Biostrings)) # SNT: Necessary for loading in BLOSUM matrix 
 data(BLOSUM80) # Necessary for BLOSUM prediction
 suppressMessages(library(magrittr)) # For piping commands 
@@ -29,6 +29,7 @@ split_any_annotations <- function(variant_matrix, num_of_row_with_multiple_annot
     stop("Input a variant matrix")
   }
   if (is.na(num_of_row_with_multiple_annotations)){
+    return(variant_matrix)
     stop("Called split_any_annotations with no rows with multiple annotations")
   }
   if (class(num_of_row_with_multiple_annotations) != "integer" | num_of_row_with_multiple_annotations < 1 | num_of_row_with_multiple_annotations > nrow(variant_matrix)){
@@ -136,6 +137,7 @@ parse_snps = function(snpmat){
   rows_with_multiple_annotations <- c(1:nrow(snpmat_less))[num_dividers > 2 & str_count(row.names(snpmat_less), '\\|') > 9]
   
   annotations_fixed_less <- as.matrix(snpmat_less)
+  #print(head(rownames(annotations_fixed_less)))
   if (length(rows_with_multiple_annotations) != 0){
     for (j in 1:length(rows_with_multiple_annotations)){
       annotations_fixed_less <- split_any_annotations(annotations_fixed_less, rows_with_multiple_annotations[j])
@@ -397,8 +399,10 @@ parse_indels = function(indelmat){
   
   # KS ADDED 2 LINES: drop rows with "None". Temporary fix. What's with these?
   rows_with_none <- as.integer(grep("None", row.names(indelmat_less)))
-  indelmat_less <- indelmat_less[-rows_with_none, ]
-  
+  if(length(rows_with_none) > 0){
+    indelmat_less <- indelmat_less[-rows_with_none, ]    
+  }
+
   num_dividers <- sapply(1:nrow(indelmat_less), function(x) lengths(regmatches(row.names(indelmat_less)[x], gregexpr(";", row.names(indelmat_less)[x]))))
   rows_with_multiple_annotations <- c(1:nrow(indelmat_less))[num_dividers > 2]
   
@@ -425,6 +429,11 @@ parse_indels = function(indelmat){
   repeats = sapply(strsplit(flag, '_'), function(x){x[2]}) =='REPEATS'
   # note: MASK might not be the right word but I don't have any in my data set so need to ask Ali 
   masked = sapply(strsplit(flag, '_'), function(x){x[3]}) == 'MASK'
+  
+  # GET LOCUS TAG
+  locus_tag = strsplit(row.names(annotations_fixed_less), ';') %>% sapply(., function(x){x[1]}) %>% gsub('^.*locus_tag=', '', .)
+  locus_tag_ig_gene1 = sapply(strsplit(locus_tag, '-'), function(lt){lt[1]})
+  locus_tag_ig_gene2 = sapply(strsplit(locus_tag, '-'), function(lt){lt[2]})
   
   # GRAB PREDICTION OF FUNCTIONAL IMPACT OF EACH INDEL 
   snpeff_prediction <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][3])

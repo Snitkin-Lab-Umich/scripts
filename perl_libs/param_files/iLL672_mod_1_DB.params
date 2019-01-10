@@ -1,0 +1,4 @@
+data_source	dbi:mysql:SC_iLL672_mod_1
+condition	
+biomass_rxn	BIOMASS_1
+KO_percen_growth	.1
