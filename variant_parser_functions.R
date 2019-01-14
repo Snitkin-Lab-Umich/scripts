@@ -399,9 +399,13 @@ parse_indels = function(indelmat){
   
   # KS ADDED 2 LINES: drop rows with "None". Temporary fix. What's with these?
   rows_with_none <- as.integer(grep("None", row.names(indelmat_less)))
-  if(length(rows_with_none) > 0){
-    indelmat_less <- indelmat_less[-rows_with_none, ]    
+  if (length(rows_with_none) > 0){
+    stop("There are rows in the matrix with the word 'None'. That means there is a bug.")
   }
+  
+  #if(length(rows_with_none) > 0){
+  #  indelmat_less <- indelmat_less[-rows_with_none, ]    
+  #}
 
   num_dividers <- sapply(1:nrow(indelmat_less), function(x) lengths(regmatches(row.names(indelmat_less)[x], gregexpr(";", row.names(indelmat_less)[x]))))
   rows_with_multiple_annotations <- c(1:nrow(indelmat_less))[num_dividers > 2]
