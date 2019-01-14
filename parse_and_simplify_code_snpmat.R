@@ -5,7 +5,7 @@
 
 # Input: 
 # 1. Path to code snp mat produced by Ali's variant calling pipeline. 
-# 2. Path/filename of output snp mat. 
+
 # Output: 
 # 1. Simplified, parse binary snp mat as an rdata object. 
 
@@ -21,10 +21,6 @@ if (substr(args[1], nchar(args[1]) - nchar(snpmat_name) + 1, nchar(args[1])) != 
   stop("Name of input file should be SNP_matrix_code.csv")
 }
 
-if (substr(args[2], nchar(args[2]) - 2, nchar(args[2])) != "rda"){
-  stop("Output file should be .rda format")
-}
-
 # code_snpmat should be a file: SNP_matrix_code.csv
 code_snpmat <- read.table(args[1], 
                         header = TRUE,
@@ -36,6 +32,5 @@ code_snpmat <- read.table(args[1],
 # PARSE SNP MAT ----------------------------------------------------------------
 simplified_code_snpmat <- simplify_snp_code(code_snpmat)
 parsed_simple_code_snpmat <- parse_snps(simplified_code_snpmat)
-save(parsed_simple_code_snpmat, file = args[2])
 
 # END OF SCRIPT ----------------------------------------------------------------
