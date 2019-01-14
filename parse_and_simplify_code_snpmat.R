@@ -17,7 +17,7 @@ args <- commandArgs(trailingOnly = TRUE) # arguments from the PBS script
 
 # Check arguments: 
 snpmat_name <- "SNP_matrix_code.csv"
-if (substr(args[1], nchar(args[1]) - nchar(snpmat_name), nchar(args[1])) != snpmat_name){
+if (substr(args[1], nchar(args[1]) - nchar(snpmat_name) + 1, nchar(args[1])) != snpmat_name){
   stop("Name of input file should be SNP_matrix_code.csv")
 }
 
