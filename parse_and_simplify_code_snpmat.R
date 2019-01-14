@@ -7,13 +7,23 @@
 # 1. Path to code snp mat produced by Ali's variant calling pipeline. 
 # 2. Path/filename of output snp mat. 
 # Output: 
-# 1. Simplified, parse binary snp mat. 
+# 1. Simplified, parse binary snp mat as an rdata object. 
 
 # SOURCE -----------------------------------------------------------------------
 source("/nfs/esnitkin/bin_group/pipeline/Github/scripts/variant_parser_functions.R") # this is the version controlled script
 
 # PARSE ARGUMENTS --------------------------------------------------------------
 args <- commandArgs(trailingOnly = TRUE) # arguments from the PBS script
+
+# Check arguments: 
+snpmat_name <- "SNP_matrix_code.csv"
+if (substr(args[1], nchar(args[1]) - nchar(snpmat_name), nchar(args[1])) != snpmat_name){
+  stop("Name of input file should be SNP_matrix_code.csv")
+}
+
+if (substr(args[2], nchar(args[2]) - 2, nchar(args[2])) != "rda"){
+  stop("Output file should be .rda format")
+}
 
 # code_snpmat should be a file: SNP_matrix_code.csv
 code_snpmat <- read.table(args[1], 
@@ -26,7 +36,6 @@ code_snpmat <- read.table(args[1],
 # PARSE SNP MAT ----------------------------------------------------------------
 simplified_code_snpmat <- simplify_snp_code(code_snpmat)
 parsed_simple_code_snpmat <- parse_snps(simplified_code_snpmat)
-# parsed_simple_code_snpmat$snpmat <- fix_snpmat_isolate_names(code_snpmat, parsed_simple_code_snpmat$snpmat)
 save(parsed_simple_code_snpmat, file = args[2])
 
 # END OF SCRIPT ----------------------------------------------------------------
