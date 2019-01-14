@@ -9,10 +9,6 @@ suppressMessages(library(magrittr)) # For piping commands
 suppressMessages(library(stringr)) # for counting characters, pipes 
 
 ########################
-# READ IN VARIANT MATRIX
-########################
-
-########################
 # LIBRARY 
 ########################
 
@@ -397,7 +393,6 @@ parse_indels = function(indelmat){
   # temporary change - need to fix when we figure out what's going on with these 
   indelmat_less <- indelmat[-rows_with_duplicate_alleles,]
   
-  # KS ADDED 2 LINES: drop rows with "None". Temporary fix. What's with these?
   rows_with_none <- as.integer(grep("None", row.names(indelmat_less)))
   if (length(rows_with_none) > 0){
     stop("There are rows in the matrix with the word 'None'. That means there is a bug.")
@@ -634,3 +629,24 @@ parse_indels = function(indelmat){
   
 } #end parse_indels
 
+
+simplify_snp_code <- function(snp_matrix, keepMQ = FALSE){
+  simplified_code_snpmat <- snp_matrix
+  simplified_code_snpmat[simplified_code_snpmat == 3] <- 1 # true variant
+  simplified_code_snpmat[simplified_code_snpmat == 2] <- 0 # filtered variant
+  simplified_code_snpmat[simplified_code_snpmat == -1] <- 0 # unmapped
+  simplified_code_snpmat[simplified_code_snpmat == -2] <- 0 # phage
+  simplified_code_snpmat[simplified_code_snpmat == -3] <- 0 # lowFQ
+  if (keepMQ){
+    simplified_code_snpmat[simplified_code_snpmat == -4] <- 1 # keep lowMQ
+  } else {
+    simplified_code_snpmat[simplified_code_snpmat == -4] <- 0 # remove lowMQ
+  }
+  # remove columns with no variants (phage)
+  #simplified_code_snpmat <- simplified_code_snpmat[rowSums(simplified_code_snpmat) != 0,]
+  
+  if (sum(sum(simplified_code_snpmat == 1) + sum(simplified_code_snpmat == 0)) != (ncol(simplified_code_snpmat) * nrow(simplified_code_snpmat))){
+    stop("snpmat encoded incorrectly.")
+  }
+  return(simplified_code_snpmat)
+} # end simplify_snp_code()
