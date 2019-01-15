@@ -7,9 +7,9 @@
 args = commandArgs(trailingOnly = TRUE)
 
 if(length(args) == 2){
-  pref=paste0(format(Sys.time(), "%Y-%m-%d"),'_',args[[2]])
+  pref=paste0(getwd(), "/", format(Sys.time(), "%Y-%m-%d"),'_',args[[2]])
 }else{
-  pref=paste0(format(Sys.time(), "%Y-%m-%d"))
+  pref=paste0(getwd(), "/", format(Sys.time(), "%Y-%m-%d"))
 }
 
 if(grepl('SNP',args[[1]])){
