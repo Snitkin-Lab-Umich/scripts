@@ -14,7 +14,12 @@
 pref=$(echo $1 | cut -d. -f1 | rev | cut -d/ -f1 | rev)
 
 # get working directory
+<<<<<<< HEAD
+wd=$(dirname $1)
+cd $wd
+=======
 wd=$(pwd)
+>>>>>>> 9c928920fd288c5f3e893ffde8220b864cd1b48e
 
 # modules to load (some of these might not be necessary)
 modules=$(echo python-anaconda2/201607 biopython fasttree dendropy reportlab RAxML raxml bioperl fastml/gub gubbins openmpi/1.10.2/gcc/4.8.5 gcc/4.8.5)
@@ -47,9 +52,15 @@ echo $raxml > ${pref}_raxml_command.sh
   echo $iqtree > ${pref}_iqtree_command.sh
   
   # generate pbs scripts for gubbins, raxml, iqtree
+<<<<<<< HEAD
+  /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c ${pref}_gubbins_command.sh -o ${pref}_gubbins.pbs -M "$modules" -a $acct -wd $wd
+  /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c ${pref}_iqtree_command.sh -o ${pref}_iqtree.pbs -M "$modules" -a $acct -wd $wd/iqtree_results
+  /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c ${pref}_raxml_command.sh -o ${pref}_raxml.pbs -M "$modules" -a $acct -wd $wd/raxml_results
+=======
   /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c ${pref}_gubbins_command.sh -o ${pref}_gubbins.pbs -M "$modules" -a $acct
   /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c ${pref}_iqtree_command.sh -o ${pref}_iqtree.pbs -M "$modules" -a $acct
   /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c ${pref}_raxml_command.sh -o ${pref}_raxml.pbs -M "$modules" -a $acct
+>>>>>>> 9c928920fd288c5f3e893ffde8220b864cd1b48e
 
   # start gubbins, iqtree, raxml jobs
   echo qsub ${pref}_gubbins.pbs
@@ -87,8 +98,13 @@ else
   echo $iqtree > ${pref}_iqtree_command.sh
 
   # generate pbs scripts for iqtree, raxml
+<<<<<<< HEAD
+  /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c ${pref}_iqtree_command.sh -o ${pref}_iqtree.pbs -M "$modules" -a $acct -wd $wd/iqtree_results
+  /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c ${pref}_raxml_command.sh -o ${pref}_raxml.pbs -M "$modules" -a $acct -wd $wd/raxml_results
+=======
   /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c ${pref}_iqtree_command.sh -o ${pref}_iqtree.pbs -M "$modules" -a $acct
   /nfs/esnitkin/bin_group/anaconda3/bin/python /nfs/esnitkin/bin_group/pipeline/Github/scripts/pbs_script_maker.py -c ${pref}_raxml_command.sh -o ${pref}_raxml.pbs -M "$modules" -a $acct
+>>>>>>> 9c928920fd288c5f3e893ffde8220b864cd1b48e
 
   # start iqtree, raxml jobs
 
