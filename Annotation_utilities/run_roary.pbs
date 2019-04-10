@@ -1,0 +1,21 @@
+#!/bin/sh
+####  PBS preamble
+#PBS -N Roary
+# Change the number of cores (ppn=1), amount of memory, and walltime:
+#PBS -l nodes=1:ppn=12,mem=47gb,walltime=2:00:00:00
+#PBS -j oe
+#PBS -V
+#PBS -A esnitkin_flux
+#PBS -q flux
+#PBS -l qos=flux
+####  End PBS preamble
+#  Show list of CPUs you ran on, if you're running under PBS
+if [ -n "$PBS_NODEFILE" ]; then cat $PBS_NODEFILE; fi
+#  Change to the directory you submitted from
+if [ -n "$PBS_O_WORKDIR" ]; then cd $PBS_O_WORKDIR; fi
+module purge
+module load cd-hit
+module add samtools gcc/5.4.0 boost/1.57.0 perl-modules ncbi-blast/2.5.0 mcl/14-137 fasttree mafft bedtools2/2.25.0 prank/150803 parallel
+module load roary
+module load R/3.3.0
+roary -p 8 -r -e -n -v /nfs/esnitkin/Project_MRSA/Sequence_data/2016-MRSA_colonization_vs_infection/assembly_annotation/Prokka_annotation/*/*.gff
