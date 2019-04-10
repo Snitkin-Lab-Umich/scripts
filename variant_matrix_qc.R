@@ -26,10 +26,13 @@ source('/nfs/esnitkin/bin_group/pipeline/Github/scripts/variant_parser_functions
 params$mat
 
 # Read in and parse variant matrix
-if(grepl('SNP',params$mat)){
-  alt_mat = parse_snps(params$mat)
+if(grepl('.RData',params$mat)){
+  load(params$mat)
+  alt_mat = parsed
+}else if(grepl('SNP',params$mat)){
+  alt_mat = parse_snps(params$mat,save_rdata=F)
 }else if(grepl('Indel',params$mat)){
-  alt_mat = parse_indels(params$mat)
+  alt_mat = parse_indels(params$mat,save_rdata=F)
 }
 
 #' ### Notes
@@ -92,6 +95,9 @@ paste('Only true:', sum(only_true),signif(sum(only_true)/nonphage_varcount,2))
 # Heatmap function
 heatmap_colors = c('#b35806','#e08214','#fdb863','#fee0b6','#d8daeb','#b2abd2','#8073ac','#542788')
 allele_heatmap = function(mat,col=heatmap_colors){
+  if(dim(mat)[2] == 0){
+    return('No variants fit this category.')
+  }
   par(mfrow=c(1,1))
   pos_not_filt_frac = colSums(mat == 3 | mat == 1)/(colSums(mat == 2 | mat == -3 | mat == -4) + colSums(mat == 3 | mat == 1))
   names(pos_not_filt_frac) = colnames(mat)
@@ -100,7 +106,7 @@ allele_heatmap = function(mat,col=heatmap_colors){
   pheatmap(mat,color=col,
            show_rownames = F, show_colnames = F,
            annotation_row = as.data.frame(genome_filt_count), annotation_col = as.data.frame(pos_not_filt_frac),
-           cluster_rows = F, cluster_cols = F)
+           cluster_rows = T, cluster_cols = F)
 }
 
 #' ## Phage Variants
@@ -142,7 +148,9 @@ allele_heatmap(mat[,filtered & !phage & var_type_counts[7,] == 0],col=heatmap_co
 
 #' Histogram of low FQ positions across the genome
 #+ echo=F, warnings=T, message=T
-hist(alt_mat$pos[colSums(mat == -3) != 0],1000,main='',xlab='Low FQ positions across genome')
+if(length(alt_mat$pos[colSums(mat == -3) != 0]) != 0){
+  hist(alt_mat$pos[colSums(mat == -3) != 0],1000,main='',xlab='Low FQ positions across genome')
+}
 
 #' ## Low MQ
 #' 
@@ -164,7 +172,9 @@ allele_heatmap(mat[,filtered & !phage & var_type_counts[7,] == 0 & var_type_coun
 
 #' Histogram of low MQ positions across the genome
 #+ echo=F, warnings=T, message=T
+if(length(alt_mat$pos[colSums(mat == -4) != 0]) != 0){
 hist(alt_mat$pos[colSums(mat == -4) != 0],1000,main='',xlab='Low MQ positions across genome')
+}
 
 #' ## Variant count histograms.
 #' 
@@ -173,10 +183,12 @@ hist(alt_mat$pos[colSums(mat == -4) != 0],1000,main='',xlab='Low MQ positions ac
 #' Final variant counts across genome. 
 #+ echo=F, warnings=F, message=T
 hist(alt_mat$pos,10000,col=rgb(1,0,0,1/4),border = rgb(1,0,0,1/4),main='',xlab='Variant positions')
+if(length(alt_mat$pos[colSums(mat_maskMQ == -2) == 0 & colSums(mat_maskMQ == -3) == 0 & colSums(mat_maskMQ == -4) == 0]) != 0){
 hist(alt_mat$pos[colSums(mat_maskMQ == -2) == 0 & colSums(mat_maskMQ == -3) == 0 & colSums(mat_maskMQ == -4) == 0],10000,add=T,col=rgb(0,0,1,1/4),border=rgb(0,0,1,1/4))
 legend('topright',c('Before removing variants','After removing variants\n(input to gubbins)'),
        fill = rgb(1:0,0,0:1,0.4), bty = 'n',
        border = NA)
+}
 
 
 #' Number of genomes with each variant. 

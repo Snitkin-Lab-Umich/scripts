@@ -66,7 +66,7 @@ split_any_annotations <- function(variant_matrix, num_of_row_with_multiple_annot
 # 1) snpmat - path to snp matrix or snp matrix in matrix form
 # output:
 # list containing cleaned snpmat and parsed variables
-parse_snps = function(snpmat){
+parse_snps = function(snpmat,save_rdata=T){
   
   # if a path to the snp matrix is given
   if(is.character(snpmat)){
@@ -157,10 +157,18 @@ parse_snps = function(snpmat){
   # note: MASK might not be the right word but I don't have any in my data set so need to ask Ali 
   masked = sapply(strsplit(flag, '_'), function(x){x[3]}) == 'MASK'
   
-  # GET LOCUS TAG
-  locus_tag = strsplit(row.names(annotations_fixed_less), ';') %>% sapply(., function(x){x[1]}) %>% gsub('^.*locus_tag=', '', .)
+  # GET LOCUS TAG AND STRAND
+  lt_strand = strsplit(row.names(annotations_fixed_less), ';') %>% sapply(., function(x){x[1]}) %>% gsub('^.*locus_tag=', '', .)
+
+  # LOCUS TAG
+  locus_tag = sapply(strsplit(lt_strand,' '), function(x) x[1])
   locus_tag_ig_gene1 = sapply(strsplit(locus_tag, '-'), function(lt){lt[1]})
   locus_tag_ig_gene2 = sapply(strsplit(locus_tag, '-'), function(lt){lt[2]})
+  
+  # STRAND
+  strand = sapply(strsplit(lt_strand,' '), function(x) x[2]) %>% gsub('strand=|/$','',.)
+  strand_ig_gene1 = sapply(strsplit(strand,'/'),function(x) x[1])
+  strand_ig_gene2 = sapply(strsplit(strand,'/'),function(x) x[2])
   
   # SPLIT UP COMPONENTS 
   annotation_components <- strsplit(row.names(annotations_fixed_less), "\\|")
@@ -300,6 +308,9 @@ parse_snps = function(snpmat){
                      locus_tag = locus_tag,
                      locus_tag_ig_gene1 = locus_tag_ig_gene1,
                      locus_tag_ig_gene2 = locus_tag_ig_gene2,
+                     strand = strand,
+                     strand_ig_gene1 = strand_ig_gene1,
+                     strand_ig_gene2 = strand_ig_gene2,
                      snpeff_prediction=snpeff_prediction,
                      snpeff_low=snpeff_low,
                      snpeff_moderate=snpeff_moderate,
@@ -331,9 +342,9 @@ parse_snps = function(snpmat){
                      ig_gene1_symbol=ig_gene1_symbol,
                      ig_gene2_symbol=ig_gene2_symbol,
                      annots=annots)
-  
-  save(parsed, file = paste0(format(Sys.time(), "%Y-%m-%d"),'_snpmat_parsed.RData'))
-  
+  if(save_rdata){
+    save(parsed, file = paste0(format(Sys.time(), "%Y-%m-%d"),'_snpmat_parsed.RData'))
+  }
   return(parsed)
   
 } #end parse_snps
@@ -372,8 +383,10 @@ parse_snps = function(snpmat){
 # 1) indel matrix
 # output:
 # list including cleaned indel matrix and parsed information
-parse_indels = function(indelmat){
+parse_indels = function(indelmat,save_rdata=T){
   
+  # if a path to the indel matrix is given
+  if(is.character(indelmat)){ 
   indelmat <- read.table(indelmat,
                          header = TRUE, 
                          stringsAsFactors = FALSE, 
@@ -381,7 +394,7 @@ parse_indels = function(indelmat){
                          quote = "", 
                          row.names = 1
   )
-  
+  }
   indelmat = indelmat[!is.na(row.names(indelmat)),] #remove blank lines 
   
   # GET ROWS WITH MULTIPLE ALLELES:
@@ -430,9 +443,18 @@ parse_indels = function(indelmat){
   masked = sapply(strsplit(flag, '_'), function(x){x[3]}) == 'MASK'
   
   # GET LOCUS TAG
-  locus_tag = strsplit(row.names(annotations_fixed_less), ';') %>% sapply(., function(x){x[1]}) %>% gsub('^.*locus_tag=', '', .)
+  # GET LOCUS TAG AND STRAND
+  lt_strand = strsplit(row.names(annotations_fixed_less), ';') %>% sapply(., function(x){x[1]}) %>% gsub('^.*locus_tag=', '', .)
+  
+  # LOCUS TAG
+  locus_tag = sapply(strsplit(lt_strand,' '), function(x) x[1])
   locus_tag_ig_gene1 = sapply(strsplit(locus_tag, '-'), function(lt){lt[1]})
   locus_tag_ig_gene2 = sapply(strsplit(locus_tag, '-'), function(lt){lt[2]})
+  
+  # STRAND
+  strand = sapply(strsplit(lt_strand,' '), function(x) x[2]) %>% gsub('strand=|/$','',.)
+  strand_ig_gene1 = sapply(strsplit(strand,'/'),function(x) x[1])
+  strand_ig_gene2 = sapply(strsplit(strand,'/'),function(x) x[2])
   
   # GRAB PREDICTION OF FUNCTIONAL IMPACT OF EACH INDEL 
   snpeff_prediction <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][3])
@@ -583,6 +605,9 @@ parse_indels = function(indelmat){
                 locus_tag = locus_tag,
                 locus_tag_ig_gene1 = locus_tag_ig_gene1,
                 locus_tag_ig_gene2 = locus_tag_ig_gene2,
+                strand = strand,
+                strand_ig_gene1 = strand_ig_gene1,
+                strand_ig_gene2 = strand_ig_gene2,
                 snpeff_prediction=snpeff_prediction,
                 snpeff_low=snpeff_low,
                 snpeff_moderate=snpeff_moderate,
@@ -620,9 +645,10 @@ parse_indels = function(indelmat){
                 ig_gene1_symbol=ig_gene1_symbol,
                 ig_gene2_symbol=ig_gene2_symbol,
                 annots=annots)
-  
-  save(parsed, file = paste0(format(Sys.time(), "%Y-%m-%d"),'_indelmat_parsed.RData'))
-  
+  if(save_rdata){
+    save(parsed, file = paste0(format(Sys.time(), "%Y-%m-%d"),'_indelmat_parsed.RData'))
+  }
+
   return(parsed)
   
   
