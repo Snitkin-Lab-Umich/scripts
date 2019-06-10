@@ -3,8 +3,6 @@
 # REQUIRE LIBRARIES
 ###################
 suppressMessages(library(seqinr)) # Necessary for converting 3 letter amino acid code to 1 letter amino acid code
-suppressMessages(library(Biostrings)) # SNT: Necessary for loading in BLOSUM matrix 
-data(BLOSUM80) # Necessary for BLOSUM prediction
 suppressMessages(library(magrittr)) # For piping commands 
 suppressMessages(library(stringr)) # for counting characters, pipes 
 
@@ -272,13 +270,6 @@ parse_snps = function(snpmat,save_rdata=T){
   aa_var <- paste(ref_aa, aa_loc, var_aa, sep = "")
   aa <- paste(ref_aa, "->", var_aa, sep = "")
   
-  # DEFINE BLOSUM DELETERIOUS MUTATIONS
-  del_mut = rep(FALSE, length(ns_mut))
-  for (i in 1:length(ref_aa[ns_mut])){
-    del_mut[ns_mut][i] <- BLOSUM80[ref_aa[ns_mut][i], var_aa[ns_mut][i]] < 0
-  }  
-  
-  
   # CALCULATE GENE LENGTH IN NUCLEOTIDES 
   gene_length <- sapply(1:length(annotation_components), function(x) annotation_components[[x]][7])
   gene_length <- gsub("[0-9]+/", "", gene_length)
@@ -336,7 +327,6 @@ parse_snps = function(snpmat,save_rdata=T){
                      sift_del=sift_del,
                      aa_loc=aa_loc,
                      aa_var=aa_var,
-                     del_mut=del_mut,
                      gene_length=gene_length,
                      gene_symbol=gene_symbol,
                      ig_gene1_symbol=ig_gene1_symbol,
