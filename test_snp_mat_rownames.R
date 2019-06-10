@@ -41,31 +41,25 @@ snpmat4 <-   read.table("/scratch/esnitkin_fluxod/apirani/Project_Cdiff/Analysis
                         nrows = 351)
 
 test_snp_mat_rownames <- function(smat){
+  # Check that ERROR messages are not appearing
   expect_identical(grep("ERROR", row.names(smat)), integer(0))
-  expect_identical(grep("WARNING_TRANSCRIPT_NO_START_CODON", row.names(smat)), integer(0))
+  
+  
+  # Check that biopython "[342903:234239] bug is fixed
   expect_identical(grep("[[][0-9]", row.names(smat)), integer(0))
   
+  # Non-coding snps should have two genes in the locus_tag (grep for the "-" dash)
+  # Maybe be too strict because of issue with intragenic variants? TBD. 
   num_Non_Coding_rows <- sum((!is.na(str_match(row.names(smat), 'Non-Coding'))))
   num_Non_Coding_rows_with_two_genes <- length(row.names(smat)[(!is.na(str_match(row.names(smat), 'Non-Coding')))] %>% gsub(".*locus_tag=", "", .) %>% gsub(" Strand Information.*", "", .) %>% grep('-', .))
-  expect_equal(num_Non_Coding_rows, num_Non_Coding_rows_with_two_genes)
+  expect_equal(num_Non_Coding_rows, num_Non_Coding_rows_with_two_genes) 
   
-  # things to test for: 
-  # 1. non-coding snps should have two genes in the locus_tag (grep for the "-" dash)
-  # 3. What does this "WARNING_TRANSCRIPT_NO_START_CODON" mean? 
+  # What does this "WARNING_TRANSCRIPT_NO_START_CODON" mean? How should we handle it?
+  expect_identical(grep("WARNING_TRANSCRIPT_NO_START_CODON", row.names(smat)), integer(0))
+
 }
 
 test_snp_mat_rownames(snpmat1)
 test_snp_mat_rownames(snpmat2)
 test_snp_mat_rownames(snpmat3)
 test_snp_mat_rownames(snpmat4)
-
-
-row.names(snpmat1)[str_length(row.names(snpmat1)) > 600]
-
-row.names(snpmat1)[grep("intron", row.names(snpmat1))]
-
-row.names(snpmat1)[str_length(row.names(snpmat1)) < 200]
-
-
-row.names(snpmat1)[grep("A,T", row.names(snpmat1))]
-
