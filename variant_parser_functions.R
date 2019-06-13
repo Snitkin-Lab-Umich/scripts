@@ -132,7 +132,7 @@ parse_snps = function(snpmat,save_rdata=T){
   }
   
   # GET FUNCTIONAL ANNOTATION - PHAGE, REPEATS, MASKED 
-  flag = strsplit(row.names(annotations_fixed_less), ';') %>% sapply(., function(x){x[1]}) %>% gsub('^.*functional=', '', .)
+  flag = strsplit(row.names(annotations_fixed_less), ';') %>% sapply(., function(x){x[1]}) %>% gsub('^.*functional=', '', .) %>% gsub(" locus_tag.*", "", .)
   phage = sapply(strsplit(flag, '_'), function(x){x[1]}) == 'PHAGE'
   repeats = sapply(strsplit(flag, '_'), function(x){x[2]}) == 'REPEATS'
   # note: MASK might not be the right word but I don't have any in my data set so need to ask Ali 
@@ -378,7 +378,7 @@ parse_indels = function(indelmat,save_rdata=T){
   annotation_components <- strsplit(row.names(annotations_fixed_less), "\\|")
   
   # GET FUNCTIONAL ANNOTATION - PHAGE, REPEATS, MASKED 
-  flag = strsplit(row.names(annotations_fixed_less), ';') %>% sapply(., function(x){x[1]}) %>% gsub('^.*functional=', '', .)
+  flag = strsplit(row.names(annotations_fixed_less), ';') %>% sapply(., function(x){x[1]}) %>% gsub('^.*functional=', '', .) %>% gsub(" locus_tag.*", "", .)
   
   phage = sapply(strsplit(flag, '_'), function(x){x[1]}) =='PHAGE'
   repeats = sapply(strsplit(flag, '_'), function(x){x[2]}) =='REPEATS'
