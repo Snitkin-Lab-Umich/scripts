@@ -97,11 +97,6 @@ parse_snps = function(snpmat,save_rdata=T){
     snpmat_less <- snpmat
   }
   
-  rows_with_none <- as.integer(grep("None", row.names(snpmat_less))) #TODO What does None mean?
-  if (length(rows_with_none) > 0) {
-    snpmat_less <- snpmat_less[-rows_with_none, ]
-  }
-  
   # If there are no pipes in the row, remove that row! 
   rows_with_empty_annots = which(str_count(row.names(snpmat_less), '\\|') == 0)
   if (length(rows_with_empty_annots) > 0) {
