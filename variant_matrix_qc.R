@@ -12,8 +12,17 @@
 # Input to script: SNP_matrix_code.csv OR Indel_matrix_code.csv
 
 # Load libraries
-library(pheatmap)
-library(htmlTable)
+# load packages
+deps = c("pheatmap", "htmlTable");
+for (dep in deps){
+  if (dep %in% installed.packages()[,"Package"] == FALSE){
+    install.packages(as.character(dep), quiet=TRUE, repos = "http://cran.us.r-project.org", dependencies=TRUE);
+  }
+  library(dep, verbose=FALSE, character.only=TRUE)
+}
+
+#suppressPackageStartupMessages(library(pheatmap))
+#suppressPackageStartupMessages(library(htmlTable))
 # Load functions
 source('/nfs/esnitkin/bin_group/pipeline/Github/scripts/variant_parser_functions.R')
 
@@ -30,9 +39,9 @@ if(grepl('.RData',params$mat)){
   load(params$mat)
   alt_mat = parsed
 }else if(grepl('SNP',params$mat)){
-  alt_mat = parse_snps(params$mat,save_rdata=F)
+  alt_mat = parse_snps(params$mat,save_rdata=T)
 }else if(grepl('Indel',params$mat)){
-  alt_mat = parse_indels(params$mat,save_rdata=F)
+  alt_mat = parse_indels(params$mat,save_rdata=T)
 }
 
 #' ### Notes
@@ -82,15 +91,15 @@ nonphage_varcount = sum(rowSums(alt_mat$mat == -2) == 0)
 
 #' Masked variant positions in alignment:
 #+ echo=F, warnings=F, message=T
-paste('Phage or repeat region:', sum(phage), signif(sum(phage)/var_count,2))
-paste('Low FQ:', sum(lowfq),signif(sum(lowfq)/var_count,2))
-paste('Low MQ:', sum(lowmq),signif(sum(lowmq)/var_count,2))
+paste('Phage or repeat region (-2):', sum(phage), signif(sum(phage)/var_count,2))
+paste('Low FQ (-3):', sum(lowfq),signif(sum(lowfq)/var_count,2))
+paste('Low MQ (-4):', sum(lowmq),signif(sum(lowmq)/var_count,2))
 #' Individual variant positions (not including phage):
 #+ echo=F, warnings=F, message=T
-paste('Unmapped, filtered, and true:', sum(unmapped & filtered), signif(sum(unmapped & filtered)/nonphage_varcount,2))
-paste('Only unmapped or true:', sum(unmapped & !filtered),signif(sum(unmapped & !filtered)/nonphage_varcount,2))
-paste('Only filtered or true:', sum(!unmapped & filtered),signif(sum(!unmapped & filtered)/nonphage_varcount,2))
-paste('Only true:', sum(only_true),signif(sum(only_true)/nonphage_varcount,2))
+paste('Unmapped, filtered, and true (-1, 2, 3):', sum(unmapped & filtered), signif(sum(unmapped & filtered)/nonphage_varcount,2))
+paste('Only unmapped or true (-1, 3):', sum(unmapped & !filtered),signif(sum(unmapped & !filtered)/nonphage_varcount,2))
+paste('Only filtered or true (2, 3):', sum(!unmapped & filtered),signif(sum(!unmapped & filtered)/nonphage_varcount,2))
+paste('Only true (1):', sum(only_true),signif(sum(only_true)/nonphage_varcount,2))
 
 # Heatmap function
 heatmap_colors = c('#b35806','#e08214','#fdb863','#fee0b6','#d8daeb','#b2abd2','#8073ac','#542788')
@@ -99,13 +108,13 @@ allele_heatmap = function(mat,col=heatmap_colors){
     return('No variants fit this category.')
   }
   par(mfrow=c(1,1))
-  pos_not_filt_frac = colSums(mat == 3 | mat == 1)/(colSums(mat == 2 | mat == -3 | mat == -4) + colSums(mat == 3 | mat == 1))
-  names(pos_not_filt_frac) = colnames(mat)
-  genome_filt_count = rowSums(mat == 2 | mat == -3 | mat == -4)
-  names(genome_filt_count) = rownames(mat)
+  pos_filt_frac = 1 - colSums(mat == 3 | mat == 1)/(colSums(mat == 2 | mat == -3 | mat == -4) + colSums(mat == 3 | mat == 1))
+  names(pos_filt_frac) = colnames(mat)
+  genome_filt_frac = rowSums(mat == 2 | mat == -3 | mat == -4)/ncol(mat)
+  names(genome_filt_frac) = rownames(mat)
   pheatmap(mat,color=col,
            show_rownames = F, show_colnames = F,
-           annotation_row = as.data.frame(genome_filt_count), annotation_col = as.data.frame(pos_not_filt_frac),
+           annotation_row = as.data.frame(genome_filt_frac), annotation_col = as.data.frame(pos_filt_frac),
            cluster_rows = T, cluster_cols = F)
 }
 
@@ -185,7 +194,7 @@ hist(alt_mat$pos[colSums(mat == -4) != 0],1000,main='',xlab='Low MQ positions ac
 hist(alt_mat$pos,10000,col=rgb(1,0,0,1/4),border = rgb(1,0,0,1/4),main='',xlab='Variant positions')
 if(length(alt_mat$pos[colSums(mat_maskMQ == -2) == 0 & colSums(mat_maskMQ == -3) == 0 & colSums(mat_maskMQ == -4) == 0]) != 0){
 hist(alt_mat$pos[colSums(mat_maskMQ == -2) == 0 & colSums(mat_maskMQ == -3) == 0 & colSums(mat_maskMQ == -4) == 0],10000,add=T,col=rgb(0,0,1,1/4),border=rgb(0,0,1,1/4))
-legend('topright',c('Before removing variants','After removing variants\n(input to gubbins)'),
+legend('topright',c('Pre-masking','Post-masking\n(input to gubbins)'),
        fill = rgb(1:0,0,0:1,0.4), bty = 'n',
        border = NA)
 }
@@ -195,7 +204,7 @@ legend('topright',c('Before removing variants','After removing variants\n(input 
 #+ echo=F, warnings=T, message=T
 hist(colSums(mat == 3 | mat == 1),1000,main='',xlab='Number of genomes with variant',col=rgb(1,0,0,1/4),border = rgb(1,0,0,1/4))
 hist(colSums(mat_maskMQ == 3 | mat_maskMQ == 1),1000,main='',xlab='Number of genomes with variant',add=T,col=rgb(0,0,1,1/4),border=rgb(0,0,1,1/4))
-legend('topright',c('Before removing variants','After removing variants\n(input to gubbins)'),
+legend('topright',c('Pre-masking','Post-masking\n(input to gubbins)'),
        fill = rgb(1:0,0,0:1,0.4), bty = 'n',
        border = NA)
 
@@ -204,7 +213,19 @@ legend('topright',c('Before removing variants','After removing variants\n(input 
 #+ echo=F, warnings=T, message=T
 barplot(sort(rowSums(mat == 3 | mat == 1),decreasing = T),1000,main='',xaxt='n',xlab='Genomes',ylab='Numer of variants',col=rgb(1,0,0,1/4),border = rgb(1,0,0,1/4))
 barplot(sort(rowSums(mat_maskMQ == 3 | mat_maskMQ == 1),decreasing = T),1000,main='',xaxt='n',xlab='Genomes',ylab='Numer of variants',add=T,col=rgb(0,0,1,1/4),border=rgb(0,0,1,1/4))
-legend('topright',c('Before removing variants','After removing variants\n(input to gubbins)'),
+legend('topright',c('Pre-masking','Post-masking\n(input to gubbins)'),
+       fill = rgb(1:0,0,0:1,0.4), bty = 'n',
+       border = NA)
+
+#' Number of uniquely filtered positions in genome
+#+ echo=F, warnings=T, message=T
+binmat = ((mat == 2) | (mat == -3) | (mat == -4))
+uniq_filt_ct = (rowSums(binmat[,which(colSums(binmat) == 1)]))
+hist(uniq_filt_ct,1000,main='',xlab='Number of uniquely filtered positions in genome',col=rgb(1,0,0,1/4),border = rgb(1,0,0,1/4))
+binmat = ((mat_maskMQ == 2) | (mat_maskMQ == -3) | (mat_maskMQ == -4))
+uniq_filt_ct = (rowSums(binmat[,which(colSums(binmat) == 1)]))
+hist(uniq_filt_ct,1000,main='',xlab='Number of uniquely filtered positions in genome',add=T,col=rgb(0,0,1,1/4),border=rgb(0,0,1,1/4))
+legend('topright',c('Pre-masking','Post-masking\n(input to gubbins)'),
        fill = rgb(1:0,0,0:1,0.4), bty = 'n',
        border = NA)
 
