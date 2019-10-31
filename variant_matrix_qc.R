@@ -227,6 +227,7 @@ legend('topright',c('Pre-masking','Post-masking\n(input to gubbins)'),
 binmat = ((mat == 2) | (mat == -3) | (mat == -4))
 uniq_filt_ct = (rowSums(binmat[,which(colSums(binmat) == 1)]))
 hist(uniq_filt_ct,1000,main='',xlab='Number of uniquely filtered positions in genome',col=rgb(1,0,0,1/4),border = rgb(1,0,0,1/4))
+rm(mat) # no longer need, to free up memory
 binmat = ((mat_maskMQ == 2) | (mat_maskMQ == -3) | (mat_maskMQ == -4))
 uniq_filt_ct = (rowSums(binmat[,which(colSums(binmat) == 1)]))
 hist(uniq_filt_ct,1000,main='',xlab='Number of uniquely filtered positions in genome',add=T,col=rgb(0,0,1,1/4),border=rgb(0,0,1,1/4))
