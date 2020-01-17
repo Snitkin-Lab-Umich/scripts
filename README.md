@@ -1,8 +1,19 @@
 # Scripts
-This github repository contain frequently used scripts being used by lab members.
 
-The scripts are arranged in different directories based on their specific utilities.
+This repository contain scripts that were written or are actively being developed by Snitkin Lab members. The purpose of this repository is to make tracking of collaborative and personal projects easy and hold scripts required for certain type of analyses under one umbrella repository. This will help members to search for a script that the lab member has already developed for a task and avoid reinventing the wheel.
 
+Lab members are highly encourage to add their frequently used scripts and analysis scripts to this repo. They can be arranged in different directories with directory name being the name of analysis. For example: Alignment_utilities folder will hol scripts that are useful in working with alignment format files such as converting one type of alignment format to another. 
+
+## SOP for creating a new repository:
+
+- Before creating a new directory, please go through the existing directories and decide if your analysis can a part of an existing analysis directory. If it requires a new directory, go ahead and make one with a README file.
+- It is mandatory to Initialise each analysis repo with a README file - explaining what scripts/functions does it contain and how this scripts can be used by other lab members or integrated into their workflow.
+- Since this scripts will be used by other lab members, make sure that you have thoroughly tested it and can work without breaking in a clean environment. SOP for testing the code will follow in the next iteration of this document update.
+- Since this is a public repository, Before committing the code, make sure you dont have any sensitive patient data hardcoded. 
+- Having a test data that can be run with the scripts or a test fuction that can run on its own can speed up the debugging and testing process. This will also help members to format their input data accordingly.
+
+
+<!---
 ## Alignment_utilities
 
 - convertAlignment.pl
@@ -30,3 +41,6 @@ To parse the SNP matrix output from the variant calling pipeline
 
 render_variant_matrix_qc.R
 To perform QC on variant matrices (SNV and Indel)
+
+
+--->
