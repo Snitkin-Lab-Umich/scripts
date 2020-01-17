@@ -78,13 +78,13 @@ if(grepl('.RData',params$mat)){
 #' Total number of variants:
 
 #+ echo=F, warnings=F, message=T, error=T
-nrow(alt_mat$mat)
+nrow(alt_mat$code$mat)
 
 #' Total number of non-phage variants:
 #+ echo=F, warnings=F, message=T, error=T
-sum(rowSums(alt_mat$mat == -2) == 0)
+sum(rowSums(alt_mat$code$mat == -2) == 0)
 #+ echo=F, warnings=F, message=T, error=T
-var_type_counts = (apply(as.data.frame(t(alt_mat$mat)), 2, function(x) table(factor(x,levels=c(-1,0,1,2,3,-2,-3,-4)))))
+var_type_counts = (apply(as.data.frame(t(alt_mat$code$mat)), 2, function(x) table(factor(x,levels=c(-1,0,1,2,3,-2,-3,-4)))))
 phage = var_type_counts[6,] != 0
 lowfq = var_type_counts[7,] != 0 
 lowmq = var_type_counts[8,] != 0 
@@ -93,7 +93,7 @@ filtered = colSums(var_type_counts[c(4,7,8),]) != 0
 true = var_type_counts[5,] != 0
 only_true = var_type_counts[3,] != 0
 var_count = ncol(var_type_counts)
-nonphage_varcount = sum(rowSums(alt_mat$mat == -2) == 0)
+nonphage_varcount = sum(rowSums(alt_mat$code$mat == -2) == 0)
 
 #' Masked variant positions in alignment:
 #+ echo=F, warnings=F, message=T, error=T
@@ -131,15 +131,15 @@ allele_heatmap = function(mat,col=heatmap_colors){
 #' 
 #' Histogram of phage variants across the genome
 #+ echo=F, warnings=F, message=T, error=T
-hist(alt_mat$pos[alt_mat$phage],10000,main='',xlab='Phage variant positions')
+hist(alt_mat$code$annots$pos[alt_mat$code$annots$phage],10000,main='',xlab='Phage variant positions')
 
 #' ## All Variants
 #' For all heatmaps: (1) before gubbins recombination filtering, (2) phage regions masked, (3) rows are genomes and columns are variants.
 #' All variants (excludes phage).
 #+ echo=F, warnings=F, message=T, error=T
-mat = t(alt_mat$mat)
-colnames(mat) = rownames(alt_mat$mat)
-alt_mat$mat = NULL #to free up memory
+mat = t(alt_mat$code$mat)
+colnames(mat) = rownames(alt_mat$code$mat)
+alt_mat$code$mat = NULL #to free up memory
 print(table(colSums(mat == -2) == 0))
 allele_heatmap(mat[,colSums(mat == -2) == 0],col=heatmap_colors[c(1,2,4:length(heatmap_colors))])
 
@@ -165,8 +165,8 @@ allele_heatmap(mat[,filtered & !phage & var_type_counts[7,] == 0],col=heatmap_co
 
 #' Histogram of low FQ positions across the genome
 #+ echo=F, warnings=T, message=T, error=T
-if(length(alt_mat$pos[colSums(mat == -3) != 0]) != 0){
-  hist(alt_mat$pos[colSums(mat == -3) != 0],1000,main='',xlab='Low FQ positions across genome')
+if(length(alt_mat$code$annots$pos[colSums(mat == -3) != 0]) != 0){
+  hist(alt_mat$code$annots$pos[colSums(mat == -3) != 0],1000,main='',xlab='Low FQ positions across genome')
 }
 
 #' ## Low MQ
@@ -189,8 +189,8 @@ allele_heatmap(mat[,filtered & !phage & var_type_counts[7,] == 0 & var_type_coun
 
 #' Histogram of low MQ positions across the genome
 #+ echo=F, warnings=T, message=T, error=T
-if(length(alt_mat$pos[colSums(mat == -4) != 0]) != 0){
-hist(alt_mat$pos[colSums(mat == -4) != 0],1000,main='',xlab='Low MQ positions across genome')
+if(length(alt_mat$code$annots$pos[colSums(mat == -4) != 0]) != 0){
+hist(alt_mat$code$annots$pos[colSums(mat == -4) != 0],1000,main='',xlab='Low MQ positions across genome')
 }
 
 #' ## Variant count histograms.
@@ -199,9 +199,9 @@ hist(alt_mat$pos[colSums(mat == -4) != 0],1000,main='',xlab='Low MQ positions ac
 #' 
 #' Final variant counts across genome. 
 #+ echo=F, warnings=F, message=T, error=T
-hist(alt_mat$pos,10000,col=rgb(1,0,0,1/4),border = rgb(1,0,0,1/4),main='',xlab='Variant positions')
-if(length(alt_mat$pos[colSums(mat_maskMQ == -2) == 0 & colSums(mat_maskMQ == -3) == 0 & colSums(mat_maskMQ == -4) == 0]) != 0){
-hist(alt_mat$pos[colSums(mat_maskMQ == -2) == 0 & colSums(mat_maskMQ == -3) == 0 & colSums(mat_maskMQ == -4) == 0],10000,add=T,col=rgb(0,0,1,1/4),border=rgb(0,0,1,1/4))
+hist(alt_mat$code$annots$pos,10000,col=rgb(1,0,0,1/4),border = rgb(1,0,0,1/4),main='',xlab='Variant positions')
+if(length(alt_mat$code$annots$pos[colSums(mat_maskMQ == -2) == 0 & colSums(mat_maskMQ == -3) == 0 & colSums(mat_maskMQ == -4) == 0]) != 0){
+hist(alt_mat$code$annots$pos[colSums(mat_maskMQ == -2) == 0 & colSums(mat_maskMQ == -3) == 0 & colSums(mat_maskMQ == -4) == 0],10000,add=T,col=rgb(0,0,1,1/4),border=rgb(0,0,1,1/4))
 legend('topright',c('Pre-masking','Post-masking\n(input to gubbins)'),
        fill = rgb(1:0,0,0:1,0.4), bty = 'n',
        border = NA)
