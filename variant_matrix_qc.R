@@ -36,13 +36,16 @@ params$mat
 if(grepl('.RData',params$mat)){
   load(params$mat)
   alt_mat = parsed
-}else if(grepl('SNP',params$mat)){
-  alt_mat = parse_snps(params$mat,save_rdata=T)
-  file.move(list.files('.','*RData'),'..')
-}else if(grepl('Indel',params$mat)){
-  alt_mat = parse_indels(params$mat,save_rdata=T)
-  file.move(list.files('.','*RData'),'..')
-}
+  }else{
+  stop("Requires .RData output of variant parser as the input at this time")
+  }
+# }else if(grepl('SNP',params$mat)){
+#   alt_mat = parse_snps(params$mat,save_rdata=T)
+#   file.move(list.files('.','*RData'),'..')
+# }else if(grepl('Indel',params$mat)){
+#   alt_mat = parse_indels(params$mat,save_rdata=T)
+#   file.move(list.files('.','*RData'),'..')
+# }
 
 
 
