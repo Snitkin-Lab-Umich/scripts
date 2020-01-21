@@ -29,7 +29,7 @@ source('/nfs/esnitkin/bin_group/pipeline/Github/scripts/variant_parser_functions
 # params$mat = '/scratch/esnitkin_fluxod/apirani/Project_Penn_KPC/Analysis/Regional_KPC_transmission/2018_01_22_Penn_ST258_variant_calling/2018_12_06_14_33_46_core_results/data_matrix/matrices/SNP_matrix_code.csv'
 
 #' ### Input matrix:
-#+ echo=F, warnings=T, message=T, error=T
+#+ echo=F, warnings=T, message=T, error=F
 params$mat
 
 # Read in and parse variant matrix
