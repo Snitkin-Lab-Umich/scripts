@@ -48,7 +48,7 @@ if(grepl('.RData',params$mat)){
 # }
 
 print(length(parsed))
-
+stop()
 #' ### Notes
 #' The input into gubbins is an alignment where all phage regions, repeat regions, manually masked regions, low FQ (heterozygous) variant positions, and low MQ (mapping quality) variant positions are masked. The gubbins output is then used to build a tree. The code variant matrices contain more information in that low FQ and low MQ variant positions are not masked, but the position in genomes where the variant was filtered are indicated with a -3 or -4, respectively. Below are plots of variant positions including and excluding low FQ and low MQ to determine whether or not to use these positions for downstream analyses such as GWAS.
 #' 
